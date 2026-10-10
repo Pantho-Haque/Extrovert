@@ -61,6 +61,25 @@ export function Guide({ onClose, onTour, onReport }: { onClose: () => void; onTo
   );
 }
 
+/** Each slide's colors: [deep, glow, highlight]. Blended smoothly (see @property in styles.css). */
+const MOODS: [string, string, string][] = [
+  ['#3730A3', '#A855F7', '#EC4899'], // welcome
+  ['#1E3A8A', '#6366F1', '#0EA5E9'], // workspaces
+  ['#4C1D95', '#8B5CF6', '#22D3EE'], // your apps
+  ['#831843', '#EC4899', '#F97316'], // never miss
+  ['#312E81', '#6366F1', '#A855F7'], // flow
+  ['#134E4A', '#0D9488', '#6366F1'], // privacy
+  ['#14532D', '#10B981', '#EAB308'], // wellbeing
+  ['#1E3A8A', '#3B82F6', '#14B8A6'], // performance
+  ['#581C87', '#C026D3', '#6366F1'], // switching
+  ['#3730A3', '#8B5CF6', '#EC4899'], // done
+];
+const mood = (i: number, last: number) => {
+  const [deep, glow, hi] = MOODS[Math.round((i / last) * (MOODS.length - 1))] ?? MOODS[0]!;
+  return { ['--deep' as string]: deep, ['--glow' as string]: glow, ['--hi' as string]: hi };
+};
+const SPARKS: [number, number, number][] = [[12, 18, 0], [84, 22, 1.2], [70, 78, 2.1], [22, 72, 0.6], [48, 12, 1.7], [92, 60, 2.6], [6, 50, 3.1], [58, 88, 0.9], [34, 40, 2.3], [76, 44, 3.6]];
+
 /** A short, simulated walk through every feature: one slide per feature group. Nothing in the app is touched. */
 export function Tour({ onClose }: { onClose: () => void }) {
   const groups = FEATURE_GROUPS.map((g) => ({ ...g, features: g.features.filter(forThisOs) }));
@@ -86,8 +105,16 @@ export function Tour({ onClose }: { onClose: () => void }) {
   return (
     <div className="backdrop">
       <div className="tour" role="dialog" aria-label="Feature tour">
-        <div key={i} className="tour-stage">
-          <TourScene id={g?.id ?? (i === 0 ? 'intro' : 'outro')} icon={g && isIconName(g.icon) ? g.icon : 'star'} />
+        <div className="tour-stage" style={mood(i, last)}>
+          {/* The backdrop stays while the slides change, so its colors blend from one mood to the next. */}
+          <div className="tour-bg" aria-hidden="true">
+            <i className="blob b1" /><i className="blob b2" /><i className="blob b3" /><i className="blob b4" />
+            <span className="orbit" /><span className="orbit" /><span className="orbit" />
+            {SPARKS.map(([x, y, d], k) => <b key={k} className="spark" style={{ left: `${x}%`, top: `${y}%`, animationDelay: `${d}s` }} />)}
+          </div>
+          <div key={i} className="tour-scene">
+            <TourScene id={g?.id ?? (i === 0 ? 'intro' : 'outro')} icon={g && isIconName(g.icon) ? g.icon : 'star'} />
+          </div>
         </div>
         <div key={`t${i}`} className="tour-text">
           <span className="step">{g ? `${i} / ${groups.length}` : i === 0 ? 'Tour' : 'Done'}</span>

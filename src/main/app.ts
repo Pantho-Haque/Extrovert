@@ -10,7 +10,7 @@ import { app, BaseWindow, dialog, Menu, powerMonitor, screen, session, shell, sy
 import { hashPin, verifyPin } from '../core/auth/pin';
 import { chromeUserAgent } from '../core/browser/user-agent';
 import { issueUrl, systemInfo, type Report } from '../core/feedback/issue';
-import { addedIn } from '../core/guide/registry';
+import { addedIn, keyOf } from '../core/guide/registry';
 import { isLoginPage, serviceDef } from '../core/services/catalog';
 import { nextUnread, totalUnread } from '../core/unread/aggregate';
 import { DEFAULT_UNREAD_PATTERN, parseUnread } from '../core/unread/parse-title';
@@ -30,6 +30,7 @@ import { UsageTracker } from './usage-tracker';
 import { ViewHost } from './views';
 import { cancelSignIn, signInWithGoogle } from './google-sign-in';
 import { listBrowsers, resyncSignIn } from './browser-import';
+import { siteIconFor } from './site-icons';
 
 const NETWORK_ERRORS = new Set([-21, -100, -101, -102, -104, -105, -106, -109, -118, -130, -137]);
 const STAGGER_MS = 1200;
@@ -56,6 +57,9 @@ export class Extrovert {
   private menuKey = '';
 
   start(): void {
+    // The dock icon in development (a packaged build gets it from the app bundle) and the About panel.
+    if (process.platform === 'darwin' && !app.isPackaged) app.dock?.setIcon(resource('icon.png'));
+    app.setAboutPanelOptions({ applicationName: 'Extrovert', iconPath: resource('icon.png'), website: 'https://pantho-haque.github.io/Extrovert' });
     this.deleteOrphanLogins();
     app.userAgentFallback = chromeUserAgent(process.platform, process.versions.chrome);
     const bounds = this.store.profile.bounds;
@@ -66,6 +70,7 @@ export class Extrovert {
       minHeight: 600,
       title: 'Extrovert',
       backgroundColor: '#F3F4F7',
+      icon: resource('icon.png'), // window and taskbar on Windows and Linux
       ...(process.platform === 'darwin' ? { titleBarStyle: 'hiddenInset', trafficLightPosition: { x: 12, y: 9 } } : {}),
     });
 
@@ -91,7 +96,9 @@ export class Extrovert {
         const loc = this.store.locate(id);
         if (!loc) return;
         // Catalog services use the outline icon pack; only custom websites show their own site icon.
-        if (loc.inst.type === 'custom') this.store.patchStatus(id, { icon });
+        if (loc.inst.type !== 'custom') return;
+        this.store.patchStatus(id, { icon });
+        this.saveSiteIcon(loc.inst, icon);
       },
       playing: (id, playing) => this.usage.setPlaying(id, playing),
       openLink: (id, url) => this.routeLink(id, url),
@@ -438,6 +445,8 @@ export class Extrovert {
     for (const item of items) {
       const inst = newInstance(item.type, ws.instances, `i-${randomUUID().slice(0, 8)}`, { ...(item.label ? { label: item.label } : {}), ...(item.url ? { url: item.url } : {}), ...(item.icon ? { icon: item.icon } : {}), ...(item.color ? { color: item.color } : {}) });
       ws.instances.push(inst);
+      // A website keeps its own icon from the start, even before (or without) its page loading.
+      if (inst.type === 'custom' && inst.url) void siteIconFor(inst.url).then((icon) => icon && !inst.siteIcon && this.saveSiteIcon(inst, icon));
       this.store.statuses[inst.id] = blankStatus(instanceUrl(inst));
       if (!ws.suspended) this.views.ensure(ws, inst);
       ids.push(inst.id);
@@ -445,6 +454,13 @@ export class Extrovert {
     if (ids[0] && ws.id === this.store.activeWorkspace?.id) this.selectInstance(ws.id, ids[0]);
     this.store.save('profile');
     return ids;
+  }
+
+  private saveSiteIcon(inst: Instance, icon: string): void {
+    if (inst.siteIcon === icon) return;
+    inst.siteIcon = icon;
+    this.store.save('profile');
+    this.store.emit();
   }
 
   removeInstance(workspaceId: string, instanceId: string): void {
@@ -733,7 +749,7 @@ export class Extrovert {
     if (!wc || !st) return;
     const pin = { id: randomUUID(), workspaceId, instanceId, title: (st.title || wc.getURL()).replace(/^\(\d+\+?\)\s*/, '').slice(0, 80), url: wc.getURL() };
     this.updateSettings({ pins: [...this.store.settings.pins, pin] });
-    this.toast(`Pinned “${pin.title}”. Find it in ⌘K or by right-clicking the icon.`);
+    this.toast(`Pinned “${pin.title}”. Find it in ${keyOf('palette', process.platform === 'darwin')} or by right-clicking the icon.`);
   }
 
   openPin(id: string): void {
@@ -914,6 +930,9 @@ export class Extrovert {
     this.win.focus();
   }
 }
+
+/** A file in resources/ (app icons), in development and in the packaged app. */
+export const resource = (name: string): string => join(app.getAppPath(), 'resources', name);
 
 export function loadRenderer(wc: Electron.WebContents, hash: string): void {
   if (!app.isPackaged && process.env.ELECTRON_RENDERER_URL) void wc.loadURL(`${process.env.ELECTRON_RENDERER_URL}#${hash}`);

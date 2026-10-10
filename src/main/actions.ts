@@ -5,6 +5,7 @@
 import { clipboard, ipcMain, shell } from 'electron';
 import { catalog, parseCustomUrl } from '../core/services/catalog';
 import { cleanLook } from '../core/services/look';
+import { siteIconFor } from './site-icons';
 import type { SnoozeChoice } from '../core/notifications/rules';
 import { MAX_DETAILS, MAX_TITLE, SEVERITIES, type Severity } from '../core/feedback/issue';
 import type { ActionName, Actions, FloatingName } from '../shared/ipc';
@@ -160,6 +161,10 @@ const handlers: { [K in ActionName]: Handler } = {
   checkUpdates: (a) => a.updates.check(),
   installUpdate: (a) => a.updates.install(),
   systemInfo: (a) => a.systemInfo(),
+  siteIcon: async (_a, p) => {
+    const parsed = parseCustomUrl(str(p.url));
+    return parsed ? ((await siteIconFor(parsed.url)) ?? null) : null;
+  },
   reportProblem: (a, p) => {
     const severity = str(p.severity);
     if (!SEVERITIES.some((s) => s.id === severity)) throw new BadPayload('Unknown severity');

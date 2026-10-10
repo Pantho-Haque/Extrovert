@@ -23,6 +23,7 @@ Rules:
 - New feature in a release → `added: '<that version>'` so What's new shows it.
 - Removed feature → delete its entry. Never list something that isn't built.
 - `unique: true` only when competitor research confirms Ferdium, Rambox, Wavebox and Shift lack it.
+- Unique features also carry `icon` and `details` (the website's expandable highlight cards), and a small simulated picture in `docs/assets/site.js` (`ART`, keyed by the title as a slug). A new unique feature needs all three; a card without a picture still works.
 - Never hard-code a key combo in UI code; use `keyOf(id, isMac)` / `accel(id)`.
 
 Then run `pnpm sync-docs`. `pnpm test` fails if README or docs/index.html are out of date.
@@ -32,7 +33,9 @@ Then run `pnpm sync-docs`. `pnpm test` fails if README or docs/index.html are ou
 Check each against the change; fix anything no longer true:
 
 - **README.md**: Install, Getting started, Privacy table, Troubleshooting, Build from source (env vars, Google client steps), Scripts, Project layout.
-- **docs/index.html**: hero copy, "Why Extrovert" pillars, comparison table, Privacy cards, Install steps, FAQ.
+- **docs/index.html**: hero copy, comparison table, Privacy rows, Install steps, FAQ.
+- **docs/assets/bg.js**: the living background (the app icons as a network, messages travelling, badges popping). Keep its app list in step with the services Extrovert supports.
+- **docs/assets/demo.js**: the interactive replica of the app (sidebar, badges, account menu, ⌘K palette, ⌘J, peek, zen, lock, notifications). When the app's look or a shown behaviour changes, change the demo too; its styles in docs/assets/site.css copy the app's tokens and components from src/renderer/src/styles.css.
 - **COMPETITIVE_ANALYSIS.md**: claims about Extrovert (e.g. Drive sync is still planned, not built).
 - **PLANNING.md** §11b Build status: working / not built yet, test counts.
 - In-app copy that explains the feature (onboarding, empty states, settings descriptions).
@@ -40,6 +43,10 @@ Check each against the change; fix anything no longer true:
 ## 3. Verify
 
 `pnpm typecheck && pnpm test && pnpm test:e2e`. For website changes, render docs/index.html (light and dark) and look at it.
+
+## The logo
+
+Logo A ("The Hello") is the only logo. Master: `resources/icon.svg`. If it changes, also update `Brand` in `src/renderer/src/ui.tsx`, the copies in `docs/` (logo.svg, favicon.svg, the header and `#logo-a` in index.html, `.brand-mark` in site.css), the shapes in `scripts/make-icons.cjs`, then run `pnpm icons`.
 
 ## Facts to keep straight
 

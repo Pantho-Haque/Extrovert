@@ -157,6 +157,8 @@ export interface Actions {
   checkUpdates: [void, void];
   installUpdate: [void, void];
   systemInfo: [void, string];
+  /** A website's own icon, for the Add services preview. */
+  siteIcon: [{ url: string }, string | null];
   reportProblem: [{ title: string; details: string; severity: Severity; where: string }, void];
   dismissToast: [{ id: string }, void];
   toast: [{ text: string }, void];

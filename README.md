@@ -1,6 +1,8 @@
-# Extrovert
+<p align="center"><img src="resources/icon.svg" width="96" height="96" alt="Extrovert logo"></p>
 
-**All your communities. One space.**
+<h1 align="center">Extrovert</h1>
+
+<p align="center"><b>All your communities. One space.</b></p>
 
 Extrovert is a free, open-source desktop app that puts Facebook, Messenger, WhatsApp, Instagram, LinkedIn, Gmail, Google Calendar, Drive, Meet, Chat, and any website you like into one window. Every app is the real website, untouched. You get live unread badges, real notifications, and one workspace per Google account, so work and personal never mix.
 
@@ -60,7 +62,7 @@ Extrovert checks GitHub Releases at startup and every 6 hours, and tells you whe
    - **WhatsApp** always needs a QR scan from your phone (its login lives on your device, not in a cookie).
 4. **Take the tour.** A short tour shows everything Extrovert can do. You can reopen it, and see every shortcut, from the **⌘** button in the sidebar, or with `⌘/` (`Ctrl+/` on Windows and Linux).
 
-**Another Google account?** Click your photo at the top of the sidebar → **Add another account**. Each account gets its own workspace with its own logins. Switch with one click, or with `⌘⇧1`–`9`.
+**Another Google account?** Click your photo at the top of the sidebar → **Add another account**. Each account gets its own workspace with its own logins. Switch with one click, or with `⌘⇧1`–`9` (`Ctrl+Shift+1`–`9` on Windows and Linux).
 
 **Signing out** of a workspace deletes the logins and data of every service in it from your computer.
 
@@ -85,7 +87,7 @@ One per Google account. Work and personal never mix.
 The real websites, plus any site you add.
 
 - **Facebook, Messenger, WhatsApp, Instagram, LinkedIn and Google apps**: Gmail, Calendar, Drive, Meet and Chat included. Each runs its real web app.
-- **Any website**: Paste an address to add any site, as many as you like, and give it an icon and color from the built-in icon pack.
+- **Any website**: Paste an address to add any site, as many as you like. It keeps the site's own icon, or pick one from the built-in icon pack in any color.
 - **Add several at once**: Pick every service you want and add them in one go. `⌘N / Ctrl+N`
 - **One Google sign-in for every Google app**: Sign in once and Gmail, Calendar, Drive, Meet and Chat are all signed in, as that workspace's own account.
 - **Sign in with your browser**: Already logged in to these sites in Arc, Chrome, Brave, Edge, Vivaldi, Opera or Chromium? Copy those logins instead of typing passwords. If a copied login expires, Extrovert copies it again by itself. *(macOS)*
@@ -113,7 +115,7 @@ Get anywhere in a keystroke.
 - **Smart links**: An Instagram link sent on WhatsApp opens in your Instagram, not a browser.
 - **Peek**: See a live snapshot of another service without switching. `⌥ + hover / Alt + hover`
 - **Pins**: Save any page inside a service, a group, a profile, a chat, and get back in one click.
-- **Saved replies**: Paste text you type often into any chat. `⌘⇧V / Ctrl+Shift+V`
+- **Saved replies**: Paste text you type often into any chat. `⌘⇧R / Ctrl+Shift+R`
 - **Find, back and forward**: Browser basics that work in every service. `⌘F / Ctrl+F`
 - **Zen mode**: Hide the sidebar so the service fills the window. `⌘\ / Ctrl+\`
 - **Downloads**: Everything you downloaded from any service, in one list.
@@ -175,7 +177,7 @@ Free, open source, yours to keep.
 | Forward | `⌘]` | `Ctrl+]` |
 | Reload service | `⌘R` | `Ctrl+R` |
 | Find in page | `⌘F` | `Ctrl+F` |
-| Saved replies | `⌘⇧V` | `Ctrl+Shift+V` |
+| Saved replies | `⌘⇧R` | `Ctrl+Shift+R` |
 | Zoom in | `⌘=` | `Ctrl+=` |
 | Zoom out | `⌘-` | `Ctrl+-` |
 | Actual size | `⌘0` | `Ctrl+0` |
@@ -187,7 +189,7 @@ Free, open source, yours to keep.
 | Developer tools for the service | `⌥⌘I` | `Alt+Ctrl+I` |
 <!-- /guide:shortcuts -->
 
-`⌘1`–`9` switches to the services in sidebar order; `⌘⇧1`–`9` switches to your accounts in order.
+`⌘1`–`9` / `Ctrl+1`–`9` switches to the services in sidebar order; `⌘⇧1`–`9` / `Ctrl+Shift+1`–`9` switches to your accounts in order.
 
 ---
 
@@ -222,7 +224,7 @@ Extrovert has no server and no analytics. It talks only to the websites you add,
 
 **A badge stopped updating.** Extrovert reads unread counts from each site's page title. If a site changes, right-click the service → **Reload**. If it stays wrong, please report it: click the **⌘** button in the sidebar → **Report a problem**.
 
-**The app uses a lot of memory.** Each service is a full browser page. Open the **Task manager** (`⌘K` → Task manager) to see which service uses the most, put services to sleep, or pause a whole workspace.
+**The app uses a lot of memory.** Each service is a full browser page. Open the **Task manager** (`⌘K` / `Ctrl+K` → Task manager) to see which service uses the most, put services to sleep, or pause a whole workspace.
 
 **Start completely fresh.** Quit Extrovert and delete the data folder listed above. This signs you out of everything.
 
@@ -266,6 +268,7 @@ Google treats a desktop app's client secret as not truly secret (it ships inside
 | `pnpm test` | Unit tests (Vitest) |
 | `pnpm typecheck` | TypeScript checks |
 | `pnpm test:e2e` | End-to-end checks against a real Electron window with a throwaway profile (never touches your logins) |
+| `pnpm icons` | Renders the app, dock and tray icons in `resources/` from the logo |
 | `pnpm sync-docs` | Rewrites the feature and shortcut lists in this README and on the website from the app |
 
 ### Project layout
@@ -280,6 +283,7 @@ src/
   renderer/  The app's own UI (React)
   shared/    Types and the IPC contract between main and the UI
 tests/e2e/   End-to-end driver and fixture
+resources/   The logo (icon.svg) and the app, dock and tray icons made from it
 docs/        The website (GitHub Pages)
 proto/       The original visual prototype
 ```

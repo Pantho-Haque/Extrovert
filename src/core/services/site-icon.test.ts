@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { pickIcon } from './site-icon';
+import { iconsFromHtml, pickIcon } from './site-icon';
 
 const PAGE = 'https://www.facebook.com/';
 
@@ -32,5 +32,26 @@ describe('pickIcon', () => {
 
   it('falls back to /favicon.ico when the page declares nothing', () => {
     expect(pickIcon([], 'https://web.whatsapp.com/some/path')).toBe('https://web.whatsapp.com/favicon.ico');
+  });
+});
+
+describe('iconsFromHtml', () => {
+  const html = `<html><head>
+    <link rel="mask-icon" href="/mask.svg">
+    <link rel="shortcut icon" href="/favicon.ico">
+    <link sizes="180x180" rel='apple-touch-icon' href="https://cdn.example.com/touch.png?v=1&amp;x=2">
+    <link rel=icon href=/i-32.png sizes=32x32>
+  </head><body><link rel="icon" href="/late.png"></body></html>`;
+
+  it('finds every icon the head declares, with absolute addresses', () => {
+    expect(iconsFromHtml(html, 'https://web.example.com/app/')).toEqual([
+      { href: 'https://web.example.com/favicon.ico', size: 0, touch: false },
+      { href: 'https://cdn.example.com/touch.png?v=1&x=2', size: 180, touch: true },
+      { href: 'https://web.example.com/i-32.png', size: 32, touch: false },
+    ]);
+  });
+
+  it('picks the sharpest one', () => {
+    expect(pickIcon(iconsFromHtml(html, 'https://web.example.com/'), 'https://web.example.com/')).toBe('https://cdn.example.com/touch.png?v=1&x=2');
   });
 });

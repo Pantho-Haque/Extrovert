@@ -93,6 +93,90 @@ module.exports = async (x) => {
       step(`overlay-${cmd}`, { raisedWhileOpen: open, closedByEscape: !x.store.runtime.overlay });
     }
 
+    // Every shortcut: present in the real app menu exactly once (no clash with Electron's built-in
+    // Edit/Window shortcuts either), and pressing it does what it says.
+    await safe('shortcuts', async () => {
+      const { Menu } = require('electron');
+      const mac = process.platform === 'darwin';
+      const MODS = { Command: 'CmdOrCtrl', Cmd: 'CmdOrCtrl', CommandOrControl: 'CmdOrCtrl', CmdOrCtrl: 'CmdOrCtrl', Control: mac ? 'Ctrl' : 'CmdOrCtrl', Ctrl: mac ? 'Ctrl' : 'CmdOrCtrl', Option: 'Alt', Alt: 'Alt', Shift: 'Shift' };
+      const norm = (a) => { const t = a.split('+'); const key = t.pop(); return [...new Set(t.map((m) => MODS[m] ?? m))].sort().concat(key.toUpperCase()).join('+'); };
+      const items = [];
+      const walk = (m) => m.items.forEach((it) => {
+        const acc = it.accelerator || (it.role && it.getDefaultRoleAccelerator?.());
+        if (acc) items.push({ it, acc: norm(acc), label: it.label || it.role });
+        if (it.submenu) walk(it.submenu);
+      });
+      walk(Menu.getApplicationMenu());
+      const byAcc = new Map();
+      for (const i of items) byAcc.set(i.acc, [...(byAcc.get(i.acc) ?? []), i]);
+      const clashes = [...byAcc].filter(([, l]) => l.length > 1).map(([a, l]) => `${a}: ${l.map((i) => i.label).join(' / ')}`);
+      const registry = fs.readFileSync(require('path').join(app.getAppPath(), 'src/core/guide/registry.ts'), 'utf8');
+      const keysOf = Object.fromEntries([...registry.matchAll(/\{ id: '(\w+)', keys: '([^']+)'/g)].map(([, id, keys]) => [id, keys.replace(/\\\\/g, '\\')]));
+      const missing = Object.entries(keysOf).filter(([, k]) => !/1-9|Hover/.test(k) && !byAcc.has(norm(k))).map(([id]) => id);
+      const press = (keys) => byAcc.get(norm(keys))[0].it.click();
+
+      const results = {};
+      const check = async (id, fn) => { try { results[id] = (await fn()) === true; } catch (e) { results[id] = String(e); } };
+      const dialog = () => js(`document.querySelector('[role=dialog]')?.getAttribute('aria-label') ?? (document.querySelector('.nc') ? 'Notifications' : null)`);
+      const opens = (id, label) => check(id, async () => { press(keysOf[id]); await wait(700); const got = await dialog(); await esc(); await wait(300); return got === label; });
+      const calls = (id, obj, method) => check(id, async () => {
+        const orig = obj[method]; let n = 0;
+        obj[method] = function (...a) { n++; return orig.apply(this, a); };
+        try { press(keysOf[id]); await wait(400); } finally { obj[method] = orig; }
+        return n === 1;
+      });
+
+      await opens('palette', 'Command palette');
+      await opens('replies', 'Saved replies');
+      await opens('notifications', 'Notifications');
+      await opens('addService', 'Add services');
+      await opens('guide', 'Shortcuts & features');
+      await opens('settings', 'Settings');
+      await calls('nextUnread', x, 'goNextUnread');
+      x.selectInstance('w-test', 'i-fix'); await wait(500);
+      await calls('reload', x, 'reload'); await wait(1500);
+      await check('find', async () => { press(keysOf.find); await wait(400); const ok = !!x.store.runtime.find; x.stopFind(); return ok; });
+      const zoom = () => x.store.locate('i-fix').inst.zoom;
+      await check('zoomIn', async () => { const z = zoom(); press(keysOf.zoomIn); await wait(200); return zoom() === z + 10; });
+      await check('zoomOut', async () => { const z = zoom(); press(keysOf.zoomOut); await wait(200); return zoom() === z - 10; });
+      await check('zoomReset', async () => { press(keysOf.zoomIn); press(keysOf.zoomReset); await wait(200); return zoom() === 100; });
+      await check('zen', async () => { const z = x.store.runtime.zen; press(keysOf.zen); await wait(200); const ok = x.store.runtime.zen !== z; press(keysOf.zen); await wait(200); return ok; });
+      await check('lock', async () => { press(keysOf.lock); await wait(900); const ok = x.store.runtime.locked; await x.unlock({}); await wait(400); return ok && !x.store.runtime.locked; });
+      const page = () => x.views.webContents('i-fix');
+      await check('back', async () => {
+        // As user actions: Chromium's Back skips entries a script added on its own.
+        await page().executeJavaScript(`location.hash = 'a'`, true); await wait(200);
+        await page().executeJavaScript(`location.hash = 'b'`, true); await wait(200);
+        press(keysOf.back); await wait(500);
+        return page().getURL().endsWith('#a');
+      });
+      await check('forward', async () => { press(keysOf.forward); await wait(500); return page().getURL().endsWith('#b'); });
+      await check('devtools', async () => { press(keysOf.devtools); await wait(1500); const ok = page().isDevToolsOpened(); page().closeDevTools(); await wait(300); return ok; });
+      await check('service', async () => {
+        press('CmdOrCtrl+2'); await wait(500); const moved = x.activeInstance()?.id !== 'i-fix';
+        press('CmdOrCtrl+1'); await wait(500); return moved && x.activeInstance()?.id === 'i-fix';
+      });
+      await check('workspace', async () => {
+        press('CmdOrCtrl+Shift+2'); await wait(800); const moved = x.store.activeWorkspace?.id === 'w-work';
+        press('CmdOrCtrl+Shift+1'); await wait(800); return moved && x.store.activeWorkspace?.id === 'w-test';
+      });
+      x.selectInstance('w-test', 'i-fix'); await wait(600);
+      await check('peek', async () => {
+        const wc = x.shellView.webContents;
+        const [px, py] = await js(`(() => { const b = document.querySelectorAll('.svc-list .svc')[1].getBoundingClientRect(); return [b.x + b.width / 2, b.y + b.height / 2]; })()`);
+        wc.sendInputEvent({ type: 'mouseMove', x: 400, y: 400 }); await wait(150);
+        wc.sendInputEvent({ type: 'mouseMove', x: Math.round(px), y: Math.round(py), modifiers: ['alt'] }); await wait(1500);
+        const ok = !!x.store.runtime.peek;
+        wc.sendInputEvent({ type: 'mouseMove', x: 400, y: 400 }); await wait(200);
+        x.store.runtime.peek = null; x.store.emit();
+        return ok;
+      });
+
+      const failed = Object.entries(results).filter(([, v]) => v !== true);
+      step('shortcuts', { menuItems: items.length, clashes, missing, tested: Object.keys(results).length, failed });
+      if (clashes.length || missing.length || failed.length) step('shortcuts-failed', {});
+    });
+
     // Report a problem: fills in a GitHub issue, warns about needing a GitHub account, never leaks personal data.
     await safe('report', async () => {
       const { shell } = require('electron');
@@ -118,6 +202,20 @@ module.exports = async (x) => {
       } finally {
         shell.openExternal = realOpen;
       }
+    });
+
+    // A website you add keeps its own icon (favicon): shown in the Add services preview, then saved on
+    // the service (shrunk to 64 px), so it shows even before the page loads.
+    await safe('site-icon', async () => {
+      const preview = await js(`window.extrovert.do('siteIcon', { url: 'http://127.0.0.1:8765/site.html' })`);
+      const [id] = x.addInstances('w-test', [{ type: 'custom', url: 'http://127.0.0.1:8765/site.html', label: 'Site' }]);
+      for (let k = 0; k < 20 && !x.store.locate(id)?.inst.siteIcon; k++) await wait(250);
+      const saved = x.store.locate(id)?.inst.siteIcon ?? '';
+      const size = saved ? require('electron').nativeImage.createFromDataURL(saved).getSize() : null;
+      x.removeInstance('w-test', id);
+      x.selectInstance('w-test', 'i-fix');
+      step('site-icon-saved', { preview: String(preview).slice(0, 22), saved: saved.slice(0, 22), size });
+      if (!(String(preview).startsWith('data:image/png') && saved.startsWith('data:image/png') && size?.width === 64)) step('site-icon-failed', {});
     });
 
     // A website you add can get an icon from the pack and a color; both are saved and editable later.

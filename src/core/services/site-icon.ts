@@ -26,3 +26,23 @@ export function pickIcon(candidates: IconCandidate[], pageUrl: string): string {
   const best = usable.sort((a, b) => effectiveSize(b) - effectiveSize(a))[0];
   return best?.href ?? new URL('/favicon.ico', pageUrl).href;
 }
+
+const attr = (tag: string, name: string) => tag.match(new RegExp(`\\s${name}\\s*=\\s*("([^"]*)"|'([^']*)'|([^\\s>]+))`, 'i'))?.slice(2).find((v) => v !== undefined);
+const decode = (s: string) => s.replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#39;/g, "'");
+
+/** The same icon list as ICON_PROBE, from a page's HTML, before any page is open (adding a website). */
+export function iconsFromHtml(html: string, pageUrl: string): IconCandidate[] {
+  const end = html.search(/<\/head>/i);
+  const head = end > 0 ? html.slice(0, end) : html;
+  return [...head.matchAll(/<link\b[^>]*>/gi)].flatMap(([tag]) => {
+    const rel = (attr(tag, 'rel') ?? '').toLowerCase().split(/\s+/);
+    const href = attr(tag, 'href');
+    if (!href || !(rel.includes('icon') || rel.some((r) => r.startsWith('apple-touch-icon')))) return [];
+    try {
+      const size = Math.max(0, ...(attr(tag, 'sizes') ?? '').split(/\s+/).map((s) => parseInt(s, 10) || 0));
+      return [{ href: new URL(decode(href), pageUrl).href, size, touch: rel.some((r) => r.startsWith('apple-touch-icon')) }];
+    } catch {
+      return [];
+    }
+  });
+}

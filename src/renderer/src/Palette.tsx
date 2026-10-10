@@ -1,4 +1,4 @@
-/** ⌘K command palette (FR-N06) with smart links (FR-X21) and pins (FR-X22); ⌘⇧V saved replies (FR-X23). */
+/** Command palette (FR-N06) with smart links (FR-X21) and pins (FR-X22), and saved replies (FR-X23). */
 import { useMemo, useState, type ReactNode } from 'react';
 import { linkTargets, normalizeLink } from '../../core/routing/links';
 import { instanceName, orderedInstances } from '../../core/workspaces/model';

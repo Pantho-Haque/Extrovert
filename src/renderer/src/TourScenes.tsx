@@ -4,6 +4,7 @@
  * shows its icon instead.
  */
 import type { CSSProperties, ReactNode } from 'react';
+import { accel, formatKeys, keyOf } from '../../core/guide/registry';
 import type { ServiceType } from '../../shared/types';
 import { Icon, type IconName } from './icons';
 import { isMac } from './lib';
@@ -13,7 +14,6 @@ const delay = (k: number): CSSProperties => ({ animationDelay: `${120 + k * 90}m
 const Badge = ({ n }: { n: number }) => <span className="sc-badge">{n}</span>;
 const Lines = ({ w = [70, 45] }: { w?: number[] }) => <span className="sc-lines">{w.map((x, k) => <i key={k} style={{ width: `${x}%` }} />)}</span>;
 const Key = ({ children }: { children: ReactNode }) => <kbd className="sc-key">{children}</kbd>;
-const mod = isMac ? '⌘' : 'Ctrl';
 
 const RING: ServiceType[] = ['facebook', 'messenger', 'whatsapp', 'instagram', 'linkedin', 'gmail', 'calendar', 'drive'];
 
@@ -67,14 +67,14 @@ const SCENES: Record<string, () => ReactNode> = {
         {([['whatsapp', 'Rahim', 'Are we still on for tonight?'], ['linkedin', 'Sara', 'Thanks for the intro!']] as [ServiceType, string, string][]).map(([t, who, text], k) => (
           <div key={who} className="sc-card sc-toast sc-slide" style={delay(k + 3)}><ServiceIcon type={t} size={32} /><div><b>{who}</b><small>{text}</small></div></div>
         ))}
-        <div className="sc-pill sc-pop" style={delay(6)}><Key>{mod}J</Key> Next unread</div>
+        <div className="sc-pill sc-pop" style={delay(6)}><Key>{keyOf('nextUnread', isMac)}</Key> Next unread</div>
       </div>
     </div>
   ),
 
   flow: () => (
     <div className="sc-card sc-palette sc-pop">
-      <div className="sc-search"><Icon name="search" size={16} /><span>insta<i className="sc-caret" /></span><Key>{mod}K</Key></div>
+      <div className="sc-search"><Icon name="search" size={16} /><span>insta<i className="sc-caret" /></span><Key>{keyOf('palette', isMac)}</Key></div>
       {([['instagram', 'Instagram', 'Personal'], ['instagram', 'Instagram', 'Work'], ['messenger', 'Messenger', 'Personal']] as [ServiceType, string, string][]).map(([t, name, ws], k) => (
         <div key={name + ws} className={`sc-res sc-slide ${k === 0 ? 'on' : ''}`} style={delay(k + 1)}><ServiceIcon type={t} size={26} /><b>{name}</b><small>{ws}</small></div>
       ))}
@@ -90,7 +90,7 @@ const SCENES: Record<string, () => ReactNode> = {
       <div className="sc-col" style={{ gap: 12 }}>
         <span className="sc-tile sc-pop" style={delay(3)}><ServiceIcon type="meet" size={46} /><span className="sc-live"><Icon name="camera" size={10} /></span></span>
         <div className="sc-pill sc-pop" style={delay(5)}><Icon name="shield" size={15} /> Previews hidden</div>
-        <div className="sc-pill sc-pop" style={delay(6)}><Key>{isMac ? '⌘⇧L' : 'Ctrl+Shift+L'}</Key></div>
+        <div className="sc-pill sc-pop" style={delay(6)}><Key>{keyOf('lock', isMac)}</Key></div>
       </div>
     </div>
   ),
@@ -124,7 +124,7 @@ const SCENES: Record<string, () => ReactNode> = {
 
   outro: () => (
     <div className="sc-col" style={{ gap: 16 }}>
-      <div className="sc-keycaps sc-pop"><Key>{mod}</Key><Key>/</Key></div>
+      <div className="sc-keycaps sc-pop">{formatKeys(accel('guide'), isMac).split(isMac ? '' : '+').map((k) => <Key key={k}>{k}</Key>)}</div>
       <div className="sc-pill sc-pop" style={delay(2)}><Icon name="command" size={15} /> Shortcuts & features</div>
     </div>
   ),

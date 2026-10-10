@@ -21,6 +21,8 @@ export interface Instance {
   icon?: string;
   /** Websites you added: the icon's color. */
   color?: string;
+  /** Websites you added: the site's own icon (small data URL), saved so it shows before the page loads. Set by the app only. */
+  siteIcon?: string;
   /** Short tag shown on the icon when a workspace has several of the same service. */
   tag?: string;
   /** Custom services, or an override of the catalog URL. */

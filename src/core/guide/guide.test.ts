@@ -18,9 +18,16 @@ describe('formatKeys', () => {
 });
 
 describe('registry', () => {
+  it("doesn't clash with Electron's built-in edit and window shortcuts on Windows and Linux", () => {
+    // Electron's role defaults there, plus Ctrl+Shift+V (paste as plain text in every browser).
+    const builtIn = ['CmdOrCtrl+Z', 'CmdOrCtrl+Y', 'CmdOrCtrl+Shift+Z', 'CmdOrCtrl+X', 'CmdOrCtrl+C', 'CmdOrCtrl+V', 'CmdOrCtrl+Shift+V', 'CmdOrCtrl+A', 'CmdOrCtrl+W', 'CmdOrCtrl+M', 'CmdOrCtrl+Q', 'F11'];
+    expect(SHORTCUTS.filter((s) => builtIn.includes(s.keys)).map((s) => s.id)).toEqual([]);
+  });
+
   it('has unique shortcuts and real icons', () => {
     expect(new Set(SHORTCUTS.map((s) => s.keys)).size).toBe(SHORTCUTS.length);
-    expect(FEATURE_GROUPS.filter((g) => !isIconName(g.icon)).map((g) => g.icon)).toEqual([]);
+    const icons = [...FEATURE_GROUPS.map((g) => g.icon), ...FEATURE_GROUPS.flatMap((g) => g.features.flatMap((f) => (f.icon ? [f.icon] : [])))];
+    expect(icons.filter((i) => !isIconName(i))).toEqual([]);
   });
 });
 

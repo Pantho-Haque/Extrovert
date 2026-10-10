@@ -5,6 +5,7 @@
 import { join } from 'node:path';
 import { app, type BaseWindow, session, WebContentsView } from 'electron';
 import { ICON_PROBE, pickIcon, type IconCandidate } from '../core/services/site-icon';
+import { iconDataUrl } from './site-icons';
 import { domainsOf, isServiceUrl } from '../core/services/catalog';
 import { partitionFor, startUrl } from '../core/workspaces/model';
 import type { Instance, Workspace } from '../shared/types';
@@ -13,7 +14,6 @@ export const SIDEBAR_WIDTH = 68;
 /** macOS: a thin title bar holds the window buttons, so nothing sits under them. */
 export const TITLEBAR_HEIGHT = process.platform === 'darwin' ? 30 : 0;
 const ICON_WORLD = 1001; // isolated JS world: reads the page's DOM without the page seeing us
-const MAX_ICON_BYTES = 512 * 1024;
 
 export interface ViewEvents {
   title(instanceId: string, title: string): void;
@@ -258,10 +258,8 @@ export class ViewHost {
       if (e.iconUrl === iconUrl) return;
       e.iconUrl = iconUrl;
       const res = await wc.session.fetch(iconUrl);
-      const type = (res.headers.get('content-type') ?? '').split(';')[0]!;
-      const bytes = Buffer.from(await res.arrayBuffer());
-      if (!res.ok || !type.startsWith('image/') || bytes.length > MAX_ICON_BYTES) return;
-      this.events.icon(instanceId, `data:${type};base64,${bytes.toString('base64')}`);
+      const icon = res.ok ? iconDataUrl((res.headers.get('content-type') ?? '').split(';')[0]!.trim(), Buffer.from(await res.arrayBuffer())) : undefined;
+      if (icon) this.events.icon(instanceId, icon);
     } catch (err) {
       e.iconUrl = undefined; // try again next time the page updates its icon
       if (!app.isPackaged) console.log(`[icon] ${instanceId} failed: ${err instanceof Error ? err.message : String(err)}`);

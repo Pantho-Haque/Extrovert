@@ -1,5 +1,5 @@
 /** Add services (FR-S01…S03): pick any number from the catalog, plus any website by its address, then add them together. */
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { catalog, parseCustomUrl } from '../../core/services/catalog';
 import type { Look } from '../../core/services/look';
 import type { AppSnapshot } from '../../shared/ipc';
@@ -16,8 +16,20 @@ export function AddService({ snap, ws, onClose, onOpen }: { snap: AppSnapshot; w
   const [busy, setBusy] = useState(false);
   const [look, setLook] = useState<Look>({});
   const [styling, setStyling] = useState(false);
+  const [siteIcon, setSiteIcon] = useState<string | undefined>();
   const custom = parseCustomUrl(url);
   const count = picked.length + (custom ? 1 : 0);
+  // Show the website's own icon as soon as the address is complete (it is also saved when added).
+  useEffect(() => {
+    setSiteIcon(undefined);
+    if (!custom) return;
+    let live = true;
+    const t = setTimeout(() => void act('siteIcon', { url: custom.url }).then((icon) => live && setSiteIcon(icon ?? undefined)), 400);
+    return () => {
+      live = false;
+      clearTimeout(t);
+    };
+  }, [custom?.url]);
   const has = (type: ServiceType) => ws.instances.some((i) => i.type === type);
   const signedInGoogle = ws.instances.some((i) => i.session === 'google' && snap.statuses[i.id]?.signedIn);
 
@@ -59,11 +71,11 @@ export function AddService({ snap, ws, onClose, onOpen }: { snap: AppSnapshot; w
       {custom && (
         <>
           <div className="cu-prev">
-            <ServiceIcon type="custom" look={look} size={36} />
+            <ServiceIcon type="custom" look={{ ...look, siteIcon }} size={36} />
             <div><b>{custom.name}</b><small>{custom.url}</small></div>
             <button className="btn sm" aria-expanded={styling} onClick={() => setStyling(!styling)}><Icon name="star" size={14} /> Icon & color</button>
           </div>
-          {styling && <LookPicker look={look} url={custom.url} onChange={setLook} />}
+          {styling && <LookPicker look={look} url={custom.url} siteIcon={siteIcon} onChange={setLook} />}
         </>
       )}
       {snap.platform === 'darwin' && (

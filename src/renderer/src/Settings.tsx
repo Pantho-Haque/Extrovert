@@ -240,7 +240,7 @@ function ServicesSection({ snap }: { snap: AppSnapshot }) {
               {styling === inst.id && (
                 <tr className="look-row"><td colSpan={8}>
                   {/* An empty value clears the field: back to the site's own icon. */}
-                  <LookPicker look={inst} url={inst.url} siteIcon={st?.icon} onChange={(l) => set(inst, { icon: l.icon ?? '', color: l.color ?? '' })} />
+                  <LookPicker look={inst} url={inst.url} siteIcon={st?.icon ?? inst.siteIcon} onChange={(l) => set(inst, { icon: l.icon ?? '', color: l.color ?? '' })} />
                 </td></tr>
               )}
               </Fragment>

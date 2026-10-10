@@ -10,14 +10,19 @@ import type { Look } from '../../core/services/look';
 import { Icon } from './icons';
 import { packIcon } from './icon-pack';
 
+/** The Extrovert logo ("The Hello": someone greeting everyone at once). Same artwork as resources/icon.svg. */
 export function Brand({ size = 28 }: { size?: number }) {
   return (
-    <span className="brand" style={{ width: size, height: size }}>
-      <svg viewBox="0 0 24 24" width={size * 0.7} height={size * 0.7} aria-hidden="true">
-        <circle cx="9" cy="12" r="5.4" fill="none" stroke="#fff" strokeWidth="2.2" />
-        <circle cx="15" cy="12" r="5.4" fill="none" stroke="#fff" strokeWidth="2.2" />
-      </svg>
-    </span>
+    <svg className="brand" width={size} height={size} viewBox="0 0 64 64" aria-hidden="true">
+      <defs>
+        <linearGradient id="brand-g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#6366F1" /><stop offset=".55" stopColor="#A855F7" /><stop offset="1" stopColor="#EC4899" /></linearGradient>
+      </defs>
+      <rect width="64" height="64" rx="15" fill="url(#brand-g)" />
+      <path d="M15 23C15.5 35 22 45 32 45S48.5 35 49 23" fill="none" stroke="#fff" strokeWidth="6" strokeLinecap="round" />
+      <circle cx="32" cy="31" r="7" fill="#fff" />
+      <circle cx="15" cy="20" r="5.2" fill="#fff" />
+      <circle cx="49" cy="20" r="5.2" fill="#fff" />
+    </svg>
   );
 }
 
@@ -31,10 +36,12 @@ const BRAND_ICONS: Record<Exclude<ServiceType, 'custom'>, TablerIcon> = {
  * A service's icon: an outline brand icon on a tile tinted with the brand color. Instant and offline.
  * Custom websites use their own site icon once loaded, otherwise a globe.
  */
-export function ServiceIcon({ type, status, size = 34, look }: { type: ServiceType; status?: InstanceStatus | undefined; size?: number; name?: string; look?: Look | undefined }) {
+export function ServiceIcon({ type, status, size = 34, look }: { type: ServiceType; status?: InstanceStatus | undefined; size?: number; name?: string; look?: (Look & { siteIcon?: string | undefined }) | undefined }) {
   // A website you added can have an icon from the pack and a color of your choice (Settings → Services).
   const picked = type === 'custom' ? packIcon(look?.icon) : undefined;
-  if (type === 'custom' && !picked && status?.icon) return <img className="site-icon" src={status.icon} width={size} height={size} alt="" draggable={false} />;
+  // Otherwise its own site icon: the open page's current one, else the one saved when it was added.
+  const site = type === 'custom' && !picked ? (status?.icon ?? look?.siteIcon) : undefined;
+  if (site) return <img className="site-icon" src={site} width={size} height={size} alt="" draggable={false} />;
   const Glyph = picked ?? (type === 'custom' ? IconWorld : BRAND_ICONS[type]);
   const color = type === 'custom' ? (look?.color ?? serviceDef(type).color) : serviceDef(type).color;
   return (

@@ -1,11 +1,11 @@
 import { useRef } from 'react';
-import { keyOf } from '../../core/guide/registry';
+import { formatKeys, keyOf } from '../../core/guide/registry';
 import { groupInstances, instanceName, instanceTag } from '../../core/workspaces/model';
 import { workspaceUnread } from '../../core/unread/aggregate';
 import type { AppSnapshot } from '../../shared/ipc';
 import type { Instance, Workspace } from '../../shared/types';
 import { Icon } from './icons';
-import { act, isMac, mod } from './lib';
+import { act, isMac } from './lib';
 import type { Overlay } from './Shell';
 import { Avatar, ServiceIcon } from './ui';
 
@@ -85,7 +85,7 @@ function ServiceButton({ snap, ws, inst, active, index, tag, tagColor }: { snap:
         peeking.current = false;
       }}
       aria-label={`${name}, ${status}`}
-      title={`${name} · ${status}${index < 9 ? ` (${mod}${index + 1})` : ''}\nRight-click for more · hold ${isMac ? '⌥' : 'Alt'} to peek`}
+      title={`${name} · ${status}${index < 9 ? ` (${formatKeys(`CmdOrCtrl+${index + 1}`, isMac)})` : ''}\nRight-click for more · ${keyOf('peek', isMac)} to peek`}
     >
       <ServiceIcon type={inst.type} look={inst} status={st} name={name} />
       {inst.badge && !inst.muted && (st?.unread ?? 0) > 0 && <span key={st!.unread} className="badge pop">{st!.unread > 99 ? '99+' : st!.unread}</span>}

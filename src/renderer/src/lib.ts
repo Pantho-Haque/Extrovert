@@ -57,4 +57,3 @@ export function timeAgo(at: number, now = Date.now()): string {
 }
 
 export const isMac = api.platform === 'darwin';
-export const mod = isMac ? '⌘' : 'Ctrl+';

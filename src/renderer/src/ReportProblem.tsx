@@ -7,7 +7,7 @@ import { MAX_DETAILS, MAX_TITLE, reportText, SEVERITIES, type Severity } from '.
 import { serviceDef } from '../../core/services/catalog';
 import type { AppSnapshot } from '../../shared/ipc';
 import { Icon } from './icons';
-import { act, isMac } from './lib';
+import { act, api, isMac } from './lib';
 import { Modal } from './ui';
 
 const ITSELF = 'Extrovert itself';
@@ -47,7 +47,7 @@ export function ReportProblem({ snap, onClose }: { snap: AppSnapshot; onClose: (
         <textarea className="field" rows={5} maxLength={MAX_DETAILS} placeholder="What were you doing? What did you expect, and what happened instead?" value={details} onChange={(e) => setDetails(e.target.value)} />
       </label>
 
-      <p className="hint"><Icon name="screen" size={14} /> A screenshot helps: take one ({isMac ? '⌘⇧4' : 'Win+Shift+S'}) and paste it on the GitHub page.</p>
+      <p className="hint"><Icon name="screen" size={14} /> A screenshot helps: take one ({isMac ? '⌘⇧4' : api.platform === 'win32' ? 'Win+Shift+S' : 'PrtSc'}) and paste it on the GitHub page.</p>
 
       <details className="report-sys">
         <summary>Also attached: app version and system details (no personal data)</summary>

@@ -1,6 +1,6 @@
 /** Renders the registry into the README and the landing page, between `<!-- guide:NAME -->` markers. */
 import { ICON_PATHS } from '../../renderer/src/icons';
-import { FEATURE_GROUPS, formatKeys, keyOf, SHORTCUTS, type Feature } from './registry';
+import { accel, FEATURE_GROUPS, formatKeys, SHORTCUTS, type Feature } from './registry';
 
 const both = (keys: string) => {
   const mac = formatKeys(keys, true);
@@ -20,14 +20,15 @@ export function readmeShortcuts(): string {
   return ['| Action | macOS | Windows & Linux |', '|---|---|---|', ...rows].join('\n');
 }
 
+const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
 export function siteFeatures(): string {
-  return FEATURE_GROUPS.map((g) => `<article class="fgroup" id="${g.id}">
+  return FEATURE_GROUPS.map((g) => `<article class="fgroup" id="f-${g.id}" data-icon="${g.icon}">
   <h3>${esc(g.title)}</h3>
   <p class="tagline">${esc(g.tagline)}</p>
   <ul>
-${g.features.map((f) => `    <li><b>${esc(f.title)}</b>${f.shortcut ? ` <kbd>${esc(keyOf(f.shortcut, true))}</kbd>` : ''}${f.macOnly ? ' <span class="chip">macOS</span>' : ''}<span>${esc(f.text)}</span></li>`).join('\n')}
+${g.features.map((f) => `    <li><b>${esc(f.title)}</b>${f.shortcut ? ` ${siteKbd(accel(f.shortcut))}` : ''}${f.macOnly ? ' <span class="chip">macOS</span>' : ''}<span>${esc(f.text)}</span></li>`).join('\n')}
   </ul>
 </article>`).join('\n');
 }
@@ -36,17 +37,26 @@ const icon = (name: string) => `<svg class="i"><use href="#i-${name}"/></svg>`;
 
 /** The features no other hub has, as cards. */
 export function siteHighlights(): string {
-  return FEATURE_GROUPS.flatMap((g) => g.features.filter((f) => f.unique).map((f) => `<div class="hl">${icon(g.icon)}<b>${esc(f.title)}</b><p>${esc(f.text)}</p></div>`)).join('\n');
+  return FEATURE_GROUPS.flatMap((g) => g.features.filter((f) => f.unique).map((f) => {
+    const more = [f.details && `<p class="more">${esc(f.details)}</p>`, (f.where || f.shortcut) && `<p class="hl-meta">${f.shortcut ? siteKbd(accel(f.shortcut)) : ''}${f.where ? `<span>${esc(f.where)}</span>` : ''}</p>`].filter(Boolean).join('');
+    return `<div class="hl" data-feature="${slug(f.title)}">${icon(f.icon ?? g.icon)}<b>${esc(f.title)}</b><p>${esc(f.text)}</p>${more}</div>`;
+  })).join('\n');
 }
 
-/** The app's own UI icons used by the cards above, as an SVG sprite. */
+/** Every UI icon of the app, as an SVG sprite, so the website and its demo use exactly the app's icons. */
 export function siteIcons(): string {
-  const used = [...new Set(FEATURE_GROUPS.map((g) => g.icon))];
-  return `<svg width="0" height="0" style="position:absolute" aria-hidden="true">${used.map((n) => `<symbol id="i-${n}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ICON_PATHS[n as keyof typeof ICON_PATHS]}</symbol>`).join('')}</svg>`;
+  return `<svg width="0" height="0" style="position:absolute" aria-hidden="true">${Object.entries(ICON_PATHS).map(([n, paths]) => `<symbol id="i-${n}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${paths}</symbol>`).join('')}</svg>`;
 }
 
+/** macOS keys by default; the page swaps in `data-pc` for Windows and Linux visitors. */
+const siteKbd = (keys: string) => `<kbd class="k" data-pc="${esc(formatKeys(keys, false))}">${esc(formatKeys(keys, true))}</kbd>`;
+
+/** Every shortcut, grouped, with keys for both platforms (the page's live keyboard lights them up). */
 export function siteShortcuts(): string {
-  return SHORTCUTS.map((s) => `<div><kbd>${esc(formatKeys(s.keys, true))}</kbd><span>${esc(s.label)}</span></div>`).join('\n');
+  const groups = [...new Set(SHORTCUTS.map((s) => s.group))];
+  return groups.map((g) => `<div class="kgroup"><h4>${g}</h4>
+${SHORTCUTS.filter((s) => s.group === g).map((s) => `<button class="kbind" data-keys="${esc(s.keys)}"><span>${esc(s.label)}</span><kbd data-mac="${esc(formatKeys(s.keys, true))}" data-pc="${esc(formatKeys(s.keys, false))}">${esc(formatKeys(s.keys, true))}</kbd></button>`).join('\n')}
+</div>`).join('\n');
 }
 
 /** Puts `body` between the markers of `name`. Throws if the markers are missing. */

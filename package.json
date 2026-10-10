@@ -13,6 +13,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:e2e": "bash tests/e2e/run.sh",
+    "icons": "electron scripts/make-icons.cjs",
     "sync-docs": "UPDATE_DOCS=1 vitest run src/core/guide"
   },
   "devDependencies": {
