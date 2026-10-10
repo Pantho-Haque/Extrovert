@@ -78,7 +78,7 @@ export function Onboarding({ snap, onDone, onStart }: { snap: AppSnapshot; onDon
           {snap.runtime.signingIn && <><small className="muted">A tab opened in your browser. Pick your Google account there.</small><button className="linkish" onClick={() => act('cancelSignIn')}>Cancel</button></>}
           {error && <p className="err">{error}</p>}
           <div className="ob-props">
-            <div><Icon name="globe" /><b>Every app, untouched</b><small>The real websites, exactly as you know them.</small></div>
+            <div><Icon name="globe" /><b>Every app, as you know it</b><small>The real websites, in one window.</small></div>
             <div><Icon name="bell" /><b>Never miss a thing</b><small>Live badges on every app, every account.</small></div>
             <div><Icon name="shield" /><b>Private by design</b><small>No tracking. We never see your passwords.</small></div>
           </div>

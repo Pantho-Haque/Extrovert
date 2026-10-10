@@ -16,3 +16,6 @@ coverage/
 .vscode/
 .idea/
 .DS_Store
+
+# LinkedIn cards and other marketing material (generated locally)
+marketing/

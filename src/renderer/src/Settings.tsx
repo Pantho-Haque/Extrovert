@@ -76,7 +76,7 @@ const BODIES: Record<SectionId, (c: Ctx) => ReactNode> = {
           <select value={s.historyDays} onChange={(e) => set({ historyDays: Number(e.target.value) })}>{[7, 30, 90].map((d) => <option key={d} value={d}>{d} days</option>)}</select>
         </Row>
         <h5>VIP people</h5>
-        <p className="muted">Messages from these people get through Do Not Disturb, digests and work hours on every platform, with a distinct sound. Tip: star someone in the notification center.</p>
+        <p className="muted">Messages from these people get through Do Not Disturb, digests and work hours on every platform, marked with a star. Tip: star someone in the notification center.</p>
         <ChipList items={s.vips} placeholder="+ Add a name" onChange={(vips) => set({ vips })} />
         <h5>Saved replies <kbd>{keyOf('replies', isMac)}</kbd></h5>
         <Replies replies={s.replies} onChange={(replies) => set({ replies })} />

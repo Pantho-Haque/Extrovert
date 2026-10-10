@@ -55,4 +55,4 @@ Installers have stable names (`Extrovert-mac-arm64.dmg`, `Extrovert-mac-x64.dmg`
 
 - Not built yet (don't claim): Drive sync, tracker blocking, translations, signed/notarized builds (macOS updates are a manual download), browser-login import on Windows/Linux and from Firefox/Safari.
 - Data folder: macOS `~/Library/Application Support/Extrovert`, Windows `%APPDATA%\Extrovert`, Linux `~/.config/Extrovert`.
-- Repo: https://github.com/Pantho-Haque/Extrovert · site: https://pantho-haque.github.io/Extrovert (GitHub Pages from `docs/`).
+- Repo: https://github.com/Pantho-Haque/Extrovert · site: https://extrovertsocial.vercel.app (Vercel, serving `docs/`).

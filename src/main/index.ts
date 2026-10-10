@@ -4,6 +4,11 @@ import { Extrovert } from './app';
 
 // Dev/tests only: a throwaway profile so experiments never touch real logins.
 if (!app.isPackaged && process.env.EXTROVERT_PROFILE_DIR) app.setPath('userData', process.env.EXTROVERT_PROFILE_DIR);
+// Test runs: keep drawing while other windows cover this one (the app never jumps to the front), so screenshots work.
+if (!app.isPackaged && process.env.EXTROVERT_DEBUG_SCRIPT) {
+  app.commandLine.appendSwitch('disable-backgrounding-occluded-windows');
+  app.commandLine.appendSwitch('disable-renderer-backgrounding');
+}
 app.setName('Extrovert');
 
 if (!app.requestSingleInstanceLock()) {

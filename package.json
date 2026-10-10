@@ -4,7 +4,7 @@
   "private": true,
   "description": "All your communities. One space.",
   "author": "Pantho Haque",
-  "homepage": "https://pantho-haque.github.io/Extrovert",
+  "homepage": "https://extrovertsocial.vercel.app",
   "repository": "github:Pantho-Haque/Extrovert",
   "license": "MIT",
   "main": "./out/main/index.js",

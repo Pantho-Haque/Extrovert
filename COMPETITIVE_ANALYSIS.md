@@ -29,7 +29,7 @@ Extrovert puts all your social and Google apps into one desktop workspace. Ferdi
 ## Where Ferdium falls short
 
 - **Badges can break silently.** Each service depends on a community-written plugin (a "recipe"). When a site redesigns, the recipe can break, and the badge quietly stops updating.
-  **Extrovert:** reads the unread count from the page title, so there are no recipes to break. If a badge stops updating, Extrovert warns you instead of quietly showing 0.
+  **Extrovert:** reads the unread count from the page title, so there are no recipes to break. If a signed-in service stops reporting unread counts for days, Extrovert flags it in Settings → Services instead of quietly showing 0.
 - **Notifications without previews.** Users report notifications that arrive as a badge only.
   **Extrovert:** native notifications with a message preview, plus a notification history covering every service.
 - **Sync needs a server.** Without a Ferdium server, reinstalling loses your setup unless you exported it first.
@@ -45,7 +45,7 @@ Extrovert puts all your social and Google apps into one desktop workspace. Ferdi
 - **Calls.** Users report WhatsApp video calls not working.
   **Extrovert:** treats camera, microphone, and screen sharing as core features.
 - **Slow security updates.** Users report long gaps between releases, which leaves browser security fixes unpatched.
-  **Extrovert:** commits to shipping browser security fixes within 2 weeks of release.
+  **Extrovert:** releases are published from GitHub with a single tag, so an Electron security update can ship as soon as it's out.
 - **Stability.** Users report freezing and high CPU use.
 
 ## What both lack
@@ -55,7 +55,7 @@ Extrovert puts all your social and Google apps into one desktop workspace. Ferdi
 
 ## How Extrovert keeps quality high
 
-Every change to Extrovert must pass automated unit tests and end-to-end tests against the real app before it's merged. Every bug fix comes with a test that proves it stays fixed.
+Every release runs the unit tests before anything is built, and changes are checked with end-to-end tests that drive the real app. Bug fixes come with a test that proves they stay fixed.
 
 ---
 

@@ -4,9 +4,9 @@
 
 <p align="center"><b>All your communities. One space.</b></p>
 
-Extrovert is a free, open-source desktop app that puts Facebook, Messenger, WhatsApp, Instagram, LinkedIn, Gmail, Google Calendar, Drive, Meet, Chat, and any website you like into one window. Every app is the real website, untouched. You get live unread badges, real notifications, and one workspace per Google account, so work and personal never mix.
+Extrovert is a free, open-source desktop app that puts Facebook, Messenger, WhatsApp, Instagram, LinkedIn, Gmail, Google Calendar, Drive, Meet, Chat, and any website you like into one window. Every app is the real website, as you know it. You get live unread badges, real notifications, and one workspace per Google account, so work and personal never mix.
 
-- **Website:** https://pantho-haque.github.io/Extrovert
+- **Website:** https://extrovertsocial.vercel.app
 - **Download:** [latest release](https://github.com/Pantho-Haque/Extrovert/releases/latest) for macOS, Windows and Linux
 - **Compared with Ferdium and Rambox:** [COMPETITIVE_ANALYSIS.md](COMPETITIVE_ANALYSIS.md)
 
@@ -34,8 +34,8 @@ No account with us, no server, no tracking. Everything stays on your computer.
 
 | System | Download | Install |
 |---|---|---|
-| **macOS** 12+, Apple silicon (M1 and later) | [**Extrovert-mac-arm64.dmg**](https://github.com/Pantho-Haque/Extrovert/releases/latest/download/Extrovert-mac-arm64.dmg) | Open it and drag Extrovert to Applications. |
-| **macOS** 12+, Intel | [**Extrovert-mac-x64.dmg**](https://github.com/Pantho-Haque/Extrovert/releases/latest/download/Extrovert-mac-x64.dmg) | Open it and drag Extrovert to Applications. |
+| **macOS** 13+, Apple silicon (M1 and later) | [**Extrovert-mac-arm64.dmg**](https://github.com/Pantho-Haque/Extrovert/releases/latest/download/Extrovert-mac-arm64.dmg) | Open it and drag Extrovert to Applications. |
+| **macOS** 13+, Intel | [**Extrovert-mac-x64.dmg**](https://github.com/Pantho-Haque/Extrovert/releases/latest/download/Extrovert-mac-x64.dmg) | Open it and drag Extrovert to Applications. |
 | **Windows** 10 and 11 (64-bit) | [**Extrovert-Setup.exe**](https://github.com/Pantho-Haque/Extrovert/releases/latest/download/Extrovert-Setup.exe) | Run it. |
 | **Linux** (x64) | [**Extrovert-linux.AppImage**](https://github.com/Pantho-Haque/Extrovert/releases/latest/download/Extrovert-linux.AppImage) | `chmod +x Extrovert-linux.AppImage`, then run it. |
 | **Debian / Ubuntu** (x64) | [**Extrovert-linux.deb**](https://github.com/Pantho-Haque/Extrovert/releases/latest/download/Extrovert-linux.deb) | `sudo apt install ./Extrovert-linux.deb` |
@@ -90,7 +90,7 @@ One per Google account. Work and personal never mix.
 - **Pause a workspace**: Paused workspaces don't run in the background, to save memory.
 - **Work hours**: Outside a workspace's hours, its notifications stay quiet.
 
-### Your apps, untouched
+### Your apps, as you know them
 
 The real websites, plus any site you add.
 
@@ -105,13 +105,13 @@ The real websites, plus any site you add.
 
 Live badges and real notifications, minus the noise.
 
-- **Live unread badges**: On every service, every account, and the dock or tray.
+- **Live unread badges**: On every service and every account, plus the dock and menu bar on macOS.
 - **Notifications with previews**: Each service's own notifications, as a banner inside Extrovert while you use it and from your system otherwise, once per message, with a full history. `⌘⇧N / Ctrl+Shift+N`
 - **Next unread**: Jump to the next service with something new, across all accounts, until you reach inbox zero. `⌘J / Ctrl+J`
 - **People view**: See who is waiting on you, grouped by person across platforms.
 - **VIPs**: Messages from your VIPs break through Do Not Disturb and digests.
 - **Do Not Disturb and digest**: Silence everything, or get one summary every hour instead of constant pings.
-- **Snooze to the exact chat**: A snoozed notification reopens that exact conversation when it comes back.
+- **Snooze notifications**: A snoozed notification comes back as a reminder when you want it.
 - **While-you-were-away recap**: Back from a break? One card shows who wrote to you, and where.
 - **Login watchdog**: If a service signs you out, you're told right away instead of silently missing messages.
 
@@ -121,7 +121,7 @@ Get anywhere in a keystroke.
 
 - **Command palette**: Jump to any service, pin or action. Paste a link and it opens in the right app. `⌘K / Ctrl+K`
 - **Smart links**: An Instagram link sent on WhatsApp opens in your Instagram, not a browser.
-- **Peek**: See a live snapshot of another service without switching. `⌥ + hover / Alt + hover`
+- **Peek**: See a snapshot of another service without switching. `⌥ + hover / Alt + hover`
 - **Pins**: Save any page inside a service, a group, a profile, a chat, and get back in one click.
 - **Saved replies**: Paste text you type often into any chat. `⌘⇧R / Ctrl+Shift+R`
 - **Find, back and forward**: Browser basics that work in every service. `⌘F / Ctrl+F`
@@ -136,8 +136,8 @@ Your screen, your rules.
 - **Camera, mic and screen indicators**: A live dot shows which service is using your camera, microphone or screen.
 - **Call bubble**: Switch away during a call and it keeps going in a small floating window.
 - **Screen-share shield**: While you share your screen, previews and other accounts are hidden automatically.
-- **Lock & blur**: Blur and lock the whole app instantly, with a PIN or Touch ID. Optionally when you step away. `⌘⇧L / Ctrl+Shift+L`
-- **Permissions dashboard**: See and revoke camera, microphone, screen, notification and location access per service.
+- **Lock & blur**: Blur, mute and lock the whole app instantly, with a PIN or Touch ID. Optionally when you step away. `⌘⇧L / Ctrl+Shift+L`
+- **Permissions dashboard**: See and change camera, microphone and location access for each service.
 - **Per-workspace proxy**: Route only one workspace through a proxy, such as your office network.
 - **No tracking**: No analytics, no account with us, no server. Everything stays on your computer.
 
@@ -164,7 +164,7 @@ Free, open source, yours to keep.
 
 - **Import from Ferdium**: Bring your Ferdium services over in one step.
 - **Export and import your setup**: Move your workspaces and settings to another computer as a file.
-- **Updates from GitHub**: New versions come from GitHub Releases: installed on restart on Windows and Linux, a one-click download on macOS. Beta channel available.
+- **Updates from GitHub**: New versions come from GitHub Releases: installed on restart on Windows and the Linux AppImage, a one-click download on macOS and .deb. Beta channel available.
 - **Report a problem**: Fills in a GitHub bug report for you, with app and system details but no personal data. You submit it on GitHub with a free account.
 <!-- /guide:features -->
 

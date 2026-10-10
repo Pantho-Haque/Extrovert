@@ -396,10 +396,12 @@ module.exports = async (x) => {
     await check('lock-with-pin', async () => {
       x.setPin('2468');
       await x.lock(); await wait(500);
+      const mutedWhileLocked = x.views.all().every(({ wc }) => wc.isAudioMuted());
       const wrong = (await x.unlock({ pin: '1111' })).ok;
       const right = (await x.unlock({ pin: '2468' })).ok;
       x.setPin(null);
-      return { ok: !wrong && right && !x.store.runtime.locked, wrongRejected: !wrong, rightAccepted: right };
+      const soundBack = x.views.all().every(({ wc }) => !wc.isAudioMuted());
+      return { ok: !wrong && right && !x.store.runtime.locked && mutedWhileLocked && soundBack, wrongRejected: !wrong, rightAccepted: right, mutedWhileLocked, soundBack };
     });
 
     // Permissions dashboard: a block is remembered and enforced.
@@ -623,9 +625,13 @@ module.exports = async (x) => {
     const added = x.addInstances('w-test', [{ type: 'calendar' }, { type: 'drive' }]);
     const sessions = ['i-gm', ...added].map((id) => x.store.locate(id).inst.session);
     await require('electron').session.fromPartition('persist:w-test:google').cookies.set({ url: 'https://www.google.com', name: 'SID', value: 'e2e-test', domain: '.google.com', expirationDate: Date.now() / 1000 + 3600 });
-    // Only the apps added later are checked: Gmail itself loads real Google, which rejects this fake cookie.
-    for (let k = 0; k < 20 && !added.every((id) => x.store.statuses[id]?.signedIn); k++) await wait(250);
-    const signed = added.map((id) => x.store.statuses[id]?.signedIn);
+    // One login: every Google app reads the same session, so the login cookie is there for each.
+    // (Real Google rejects this fake cookie and may redirect to its sign-in page, so "signed in" isn't asserted.)
+    const signed = await Promise.all(['i-gm', ...added].map(async (id) => {
+      const inst = x.store.locate(id).inst;
+      const cookies = await require('electron').session.fromPartition(`persist:w-test:${inst.session}`).cookies.get({ url: 'https://www.google.com', name: 'SID' });
+      return cookies.some((c) => c.value === 'e2e-test');
+    }));
     step('shared-google-login', { addedTwoAtOnce: added.length === 2, sessions, signed });
     if (!(added.length === 2 && sessions.every((k) => k === 'google') && signed.every(Boolean))) step('shared-login-failed', {});
     for (const id of added) x.removeInstance('w-test', id);

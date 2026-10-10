@@ -105,7 +105,7 @@ export const FEATURE_GROUPS: FeatureGroup[] = [
   },
   {
     id: 'services',
-    title: 'Your apps, untouched',
+    title: 'Your apps, as you know them',
     tagline: 'The real websites, plus any site you add.',
     icon: 'globe',
     features: [
@@ -123,13 +123,13 @@ export const FEATURE_GROUPS: FeatureGroup[] = [
     tagline: 'Live badges and real notifications, minus the noise.',
     icon: 'bell',
     features: [
-      { title: 'Live unread badges', short: 'Live badges', text: 'On every service, every account, and the dock or tray.' },
+      { title: 'Live unread badges', short: 'Live badges', text: 'On every service and every account, plus the dock and menu bar on macOS.' },
       { title: 'Notifications with previews', short: 'Rich notifications', text: "Each service's own notifications, as a banner inside Extrovert while you use it and from your system otherwise, once per message, with a full history.", shortcut: 'notifications' },
       { unique: true, icon: 'zap', title: 'Next unread', short: 'Next unread', text: 'Jump to the next service with something new, across all accounts, until you reach inbox zero.', shortcut: 'nextUnread', details: 'Extrovert keeps one list of everything unread, across every app and every account. Each press takes you to the next one; when nothing is left, it tells you you\'re at inbox zero.' },
       { unique: true, icon: 'msg', title: 'People view', short: 'People view', text: 'See who is waiting on you, grouped by person across platforms.', where: 'Notifications → People', details: 'Notifications are grouped by who sent them, not by app, so Rahim\'s two WhatsApp messages and his LinkedIn message sit together. If someone uses different names on different platforms, link them once.' },
       { unique: true, icon: 'star', title: 'VIPs', short: 'VIPs', text: 'Messages from your VIPs break through Do Not Disturb and digests.', where: 'Settings → Notifications', details: 'Mark someone as a VIP from one of their notifications or in Settings. Their messages still reach you when Do Not Disturb is on or notifications are bundled into a digest, on every app.' },
       { title: 'Do Not Disturb and digest', short: 'DND & digest', text: 'Silence everything, or get one summary every hour instead of constant pings.', where: 'Settings → Notifications' },
-      { unique: true, icon: 'clock', title: 'Snooze to the exact chat', short: 'Snooze to the chat', text: 'A snoozed notification reopens that exact conversation when it comes back.', details: 'Snooze a notification for 15 minutes, an hour, until tonight or until tomorrow. When it comes back, clicking it opens that exact conversation, not just the app\'s home page.' },
+      { icon: 'clock', title: 'Snooze notifications', short: 'Snooze', text: 'A snoozed notification comes back as a reminder when you want it.', details: 'Snooze a notification for 15 minutes, an hour, until tonight or until tomorrow. When it comes back, clicking it opens the conversation if the site said which one it was, otherwise the service\'s messages.' },
       { unique: true, icon: 'moon', title: 'While-you-were-away recap', short: 'Away recap', text: 'Back from a break? One card shows who wrote to you, and where.', details: 'Come back to your computer after a while (15 minutes by default) and one card lists who wrote to you, on which app. Click any line to go straight there.' },
       { unique: true, icon: 'alert', title: 'Login watchdog', short: 'Login watchdog', text: "If a service signs you out, you're told right away instead of silently missing messages.", details: 'Some apps sign you out quietly, and other hubs then show zero forever. Extrovert notices when a service loses its login, marks it and tells you once. Logins copied from your browser are copied again by themselves.' },
     ],
@@ -142,7 +142,7 @@ export const FEATURE_GROUPS: FeatureGroup[] = [
     features: [
       { title: 'Command palette', short: 'Command palette', text: 'Jump to any service, pin or action. Paste a link and it opens in the right app.', shortcut: 'palette' },
       { title: 'Smart links', short: 'Smart links', text: 'An Instagram link sent on WhatsApp opens in your Instagram, not a browser.' },
-      { unique: true, icon: 'expand', title: 'Peek', short: 'Peek', text: 'See a live snapshot of another service without switching.', shortcut: 'peek', details: 'Hold Option (Alt on Windows and Linux) and move over any app in the sidebar to see a live snapshot of it. Let go and you\'re right where you were.' },
+      { unique: true, icon: 'expand', title: 'Peek', short: 'Peek', text: 'See a snapshot of another service without switching.', shortcut: 'peek', details: 'Hold Option (Alt on Windows and Linux) and move over any app in the sidebar to see a snapshot of it. Move away and you\'re right where you were.' },
       { title: 'Pins', short: 'Pins', text: 'Save any page inside a service, a group, a profile, a chat, and get back in one click.', where: 'Right-click a service' },
       { title: 'Saved replies', short: 'Saved replies', text: 'Paste text you type often into any chat.', shortcut: 'replies' },
       { title: 'Find, back and forward', short: 'Find & navigate', text: 'Browser basics that work in every service.', shortcut: 'find' },
@@ -157,11 +157,11 @@ export const FEATURE_GROUPS: FeatureGroup[] = [
     tagline: 'Your screen, your rules.',
     icon: 'shield',
     features: [
-      { unique: true, icon: 'mic', title: 'Camera, mic and screen indicators', short: 'Mic & camera dots', text: 'A live dot shows which service is using your camera, microphone or screen.', details: 'A red dot on an app\'s icon shows the moment it uses your camera, microphone or screen, even in an account you\'re not looking at.' },
-      { unique: true, icon: 'phone', title: 'Call bubble', short: 'Call bubble', text: 'Switch away during a call and it keeps going in a small floating window.', details: 'Start a call in WhatsApp, Messenger or Meet, then switch to another app: the call moves into a small window that stays on top. Click it to go back to the call.' },
+      { unique: true, icon: 'mic', title: 'Camera, mic and screen indicators', short: 'Mic & camera dots', text: 'A live dot shows which service is using your camera, microphone or screen.', details: 'A red dot on an app\'s icon in the sidebar shows the moment it uses your camera, microphone or screen, and goes away when it stops.' },
+      { unique: true, icon: 'phone', title: 'Call bubble', short: 'Call bubble', text: 'Switch away during a call and it keeps going in a small floating window.', details: 'Start a call in WhatsApp, Messenger or Meet, then switch to another service in Extrovert: the call moves into a small window that stays on top. Go back to that service, or close the small window, and the call returns to the main window.' },
       { unique: true, icon: 'screen', title: 'Screen-share shield', short: 'Share shield', text: 'While you share your screen, previews and other accounts are hidden automatically.', details: 'While you share your screen from any app, notification previews and your other accounts\' unread counts are hidden, so nothing private shows up in the meeting.' },
-      { title: 'Lock & blur', short: 'Lock & blur', text: 'Blur and lock the whole app instantly, with a PIN or Touch ID. Optionally when you step away.', shortcut: 'lock', where: 'Settings → Privacy & security' },
-      { title: 'Permissions dashboard', short: 'Permissions', text: 'See and revoke camera, microphone, screen, notification and location access per service.', where: 'Settings → Privacy & security' },
+      { title: 'Lock & blur', short: 'Lock & blur', text: 'Blur, mute and lock the whole app instantly, with a PIN or Touch ID. Optionally when you step away.', shortcut: 'lock', where: 'Settings → Privacy & security' },
+      { title: 'Permissions dashboard', short: 'Permissions', text: 'See and change camera, microphone and location access for each service.', where: 'Settings → Privacy & security' },
       { title: 'Per-workspace proxy', short: 'Workspace proxy', text: 'Route only one workspace through a proxy, such as your office network.', where: 'Settings → Accounts & workspaces' },
       { title: 'No tracking', short: 'No tracking', text: 'No analytics, no account with us, no server. Everything stays on your computer.' },
     ],
@@ -197,7 +197,7 @@ export const FEATURE_GROUPS: FeatureGroup[] = [
     features: [
       { title: 'Import from Ferdium', short: 'Ferdium import', text: 'Bring your Ferdium services over in one step.', where: 'Settings → Import & export' },
       { title: 'Export and import your setup', short: 'Export & import', text: 'Move your workspaces and settings to another computer as a file.', where: 'Settings → Import & export' },
-      { title: 'Updates from GitHub', short: 'Auto updates', text: 'New versions come from GitHub Releases: installed on restart on Windows and Linux, a one-click download on macOS. Beta channel available.', where: 'Settings → Updates' },
+      { title: 'Updates from GitHub', short: 'Updates', text: 'New versions come from GitHub Releases: installed on restart on Windows and the Linux AppImage, a one-click download on macOS and .deb. Beta channel available.', where: 'Settings → Updates' },
       { title: 'Report a problem', short: 'Report a problem', text: 'Fills in a GitHub bug report for you, with app and system details but no personal data. You submit it on GitHub with a free account.', where: 'Shortcuts & features (⌘ button in the sidebar), Help menu, or ⌘K' },
     ],
   },

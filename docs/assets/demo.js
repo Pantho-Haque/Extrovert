@@ -165,7 +165,7 @@
     return items.filter((i) => !q || `${i.label} ${i.sub ?? ''}`.toLowerCase().includes(q));
   }
   const paletteShell = () => `<div class="pal-backdrop" data-act="close"><div class="palette" role="dialog" aria-label="Command palette">
-      <div class="pal-in">${ic('i-search')}<input id="pal-q" placeholder="Jump to an app, a person, or paste a link" autocomplete="off"><kbd>esc</kbd></div>
+      <div class="pal-in">${ic('i-search')}<input id="pal-q" placeholder="Jump to an app, pin or action. Or paste a link" autocomplete="off"><kbd>esc</kbd></div>
       <div class="pal-list"></div>
       <div class="pal-foot"><span>↑↓ to move</span><span>↵ to open</span><span class="tip">Tip: paste an Instagram link to open it in Instagram</span></div></div></div>`;
   function paletteList() {

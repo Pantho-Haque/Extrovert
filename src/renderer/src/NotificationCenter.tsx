@@ -60,7 +60,7 @@ export function NotificationCenter({ snap, initialTab, onClose }: { snap: AppSna
               <PersonAvatar name={entry.sender} size={36} />
               <div className="nrow-m"><b>{entry.sender}</b><p>{entry.body}</p><small><Icon name="clock" size={11} /> Back {new Date(until).toLocaleString([], { weekday: 'short', hour: '2-digit', minute: '2-digit' })}</small></div>
             </div>
-          )) : <p className="empty">Nothing snoozed. Use the clock on any notification to be reminded later; the reminder opens that exact chat.</p>)}
+          )) : <p className="empty">Nothing snoozed. Use the clock on any notification to be reminded later.</p>)}
         </div>
         {snap.notifications.length > 0 && <button className="linkish" onClick={() => act('clearHistory')}>Clear history</button>}
       </aside>

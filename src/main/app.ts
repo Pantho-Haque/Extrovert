@@ -60,7 +60,7 @@ export class Extrovert {
   start(): void {
     // The dock icon in development (a packaged build gets it from the app bundle) and the About panel.
     if (process.platform === 'darwin' && !app.isPackaged) app.dock?.setIcon(resource('icon.png'));
-    app.setAboutPanelOptions({ applicationName: 'Extrovert', iconPath: resource('icon.png'), website: 'https://pantho-haque.github.io/Extrovert' });
+    app.setAboutPanelOptions({ applicationName: 'Extrovert', iconPath: resource('icon.png'), website: 'https://extrovertsocial.vercel.app' });
     this.deleteOrphanLogins();
     app.userAgentFallback = chromeUserAgent(process.platform, process.versions.chrome);
     const bounds = this.store.profile.bounds;
@@ -686,6 +686,8 @@ export class Extrovert {
       this.store.runtime.lockImage = null;
     }
     this.store.runtime.locked = true;
+    // Panic key: silence every service (a call, a video) until unlocked.
+    for (const { wc: page } of this.views.all()) page.setAudioMuted(true);
     this.setOverlay(true);
     this.store.emit();
   }
@@ -699,6 +701,7 @@ export class Extrovert {
       ok = verifyPin(input.pin, hash);
     }
     if (ok) {
+      for (const { wc: page } of this.views.all()) page.setAudioMuted(false);
       this.store.runtime.locked = false;
       this.store.runtime.lockImage = null;
       this.store.emit();

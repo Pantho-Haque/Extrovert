@@ -68,7 +68,6 @@
     'next-unread': () => `<div class="art-col">${[['whatsapp', 3], ['instagram', 0], ['gmail', 4], ['linkedin', 2]].map(([ty, n]) => `<span class="art-tile" data-n="${n}">${t(ty, 40)}${n ? badge(n) : ''}</span>`).join('')}</div><button class="art-btn" data-act="next">${mod}J · Next unread</button>`,
     'people-view': () => `<div class="art-card">${[['Rahim', '#F97316', ['whatsapp', 'whatsapp', 'linkedin'], 'Are we still on for tonight? · Sent the slides'], ['Sara', '#0EA5E9', ['instagram'], 'Loved your post!'], ['Tanvir', '#10B981', ['messenger', 'gmail'], 'Trip photos · Invoice attached']].map(([n, c, ts, msg]) => `<button class="art-row art-person">${av(n, c)}<b>${n}</b><span class="art-mini">${ts.map((ty) => t(ty, 20)).join('')}</span><small>${msg}</small></button>`).join('')}</div><small class="art-try">Tap a person</small>`,
     'vips': () => `<div class="art-stack"><button class="art-pill" data-act="dnd" aria-pressed="false"><svg class="ic"><use href="#i-moon"/></svg> Do Not Disturb: off</button>${note('whatsapp', 'Ammu <i class="art-vip">★ VIP</i>', 'Call me when you are free')}<div class="art-quiet">${note('messenger', 'Group chat', '27 new messages')}</div><small class="art-try">Turn on Do Not Disturb</small></div>`,
-    'snooze-to-the-exact-chat': () => `<div class="art-stack"><div class="art-snooze">${note('messenger', 'Zayan', 'Are you coming tomorrow?')}</div><div class="art-chips">${['15 min', '1 hour', 'Tonight', 'Tomorrow'].map((x) => `<button>${x}</button>`).join('')}</div><small class="art-try">Snooze it</small></div>`,
     'while-you-were-away-recap': () => `<div class="art-card"><small class="art-h">While you were away · 42 min</small>${[['Rahim', '#F97316', 'whatsapp'], ['Lamia', '#14B8A6', 'instagram'], ['Sara', '#0EA5E9', 'linkedin']].map(([n, c, ty]) => `<button class="art-row">${av(n, c, 24)}<b>${n}</b>${t(ty, 20)}</button>`).join('')}</div><small class="art-try">Tap someone to go there</small>`,
     'login-watchdog': () => `<div class="art-card art-warn"><span class="art-tile">${t('linkedin', 40)}<em class="art-alert">!</em></span><b class="art-state">You've been signed out of LinkedIn</b><button class="art-btn" data-act="signin">Sign in again</button></div>`,
     'peek': () => `<div class="art-peek"><div class="art-col">${['whatsapp', 'instagram', 'gmail'].map((ty, i) => `<button class="art-tile ${i === 1 ? 'next' : ''}" data-peek="${ty}">${t(ty, 36)}</button>`).join('')}</div><div class="art-snap"><small>${t('instagram', 14)} <span>Instagram</span> · Peek</small><i class="instagram"></i></div></div><small class="art-try">Hover the apps</small>`,
@@ -99,12 +98,6 @@
       e.currentTarget.lastChild.textContent = ` Do Not Disturb: ${on ? 'on' : 'off'}`;
       el.querySelector('.art-quiet').classList.toggle('hidden', on); // only the VIP gets through
     }),
-    'snooze-to-the-exact-chat': (el) => el.querySelectorAll('.art-chips button').forEach((b) => b.addEventListener('click', () => {
-      const n = el.querySelector('.art-snooze');
-      n.classList.add('away');
-      el.querySelector('.art-try').textContent = `Snoozed until ${b.textContent.toLowerCase()}…`;
-      setTimeout(() => { n.classList.remove('away'); el.querySelector('.art-try').textContent = 'Back! Opens the exact chat'; }, 1800);
-    })),
     'while-you-were-away-recap': (el) => el.querySelectorAll('.art-row').forEach((r) => r.addEventListener('click', () => {
       r.classList.add('read');
       el.querySelector('.art-try').textContent = `Opening ${r.querySelector('b').textContent}'s chat…`;
