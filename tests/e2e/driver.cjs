@@ -31,6 +31,33 @@ module.exports = async (x) => {
     step('boot', { statuses: statuses(), active: x.activeInstance()?.id });
     await shot('01-boot');
 
+    // First run: the feature tour opens by itself, walks through every slide, and is remembered.
+    const js = (code) => x.shellView.webContents.executeJavaScript(code);
+    await safe('tour', async () => {
+      const opened = await js(`!!document.querySelector('.tour')`);
+      const slides = await js(`document.querySelectorAll('.tour-dots button').length`);
+      for (let k = 0; k < slides - 1; k++) {
+        await wait(1100); await png(x.shellView.webContents, `tour-${k}`);
+        await js(`document.querySelector('.tour-f .btn.primary').click()`);
+      }
+      await wait(1100); await png(x.shellView.webContents, `tour-${slides - 1}`);
+      await js(`document.querySelector('.tour-f .btn.primary').click()`); await wait(600);
+      step('tour', { opened, slides, closed: !(await js(`!!document.querySelector('.tour')`)), remembered: x.store.settings.tourDone });
+      if (!(opened && slides > 3 && x.store.settings.tourDone)) step('tour-failed', {});
+    });
+
+    await safe('guide', async () => {
+      x.command('guide'); await wait(800);
+      const total = await js(`document.querySelectorAll('.guide-f').length`);
+      await png(x.shellView.webContents, 'guide');
+      await js(`(() => { const i = document.querySelector('.guide-top input'); const set = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set; set.call(i, 'peek'); i.dispatchEvent(new Event('input', { bubbles: true })); })()`);
+      await wait(400);
+      const filtered = await js(`document.querySelectorAll('.guide-f').length`);
+      await esc();
+      step('guide-panel', { total, filtered });
+      if (!(total > 30 && filtered >= 1 && filtered < total)) step('guide-failed', {});
+    });
+
     for (let k = 0; k < 16 && !x.store.history.length; k++) await wait(500);
     const n = x.store.history[0];
     step('notification-captured', { sender: n?.sender, body: n?.body, fixtureUnread: x.store.statuses['i-fix']?.unread });
@@ -65,6 +92,58 @@ module.exports = async (x) => {
       await esc();
       step(`overlay-${cmd}`, { raisedWhileOpen: open, closedByEscape: !x.store.runtime.overlay });
     }
+
+    // Report a problem: fills in a GitHub issue, warns about needing a GitHub account, never leaks personal data.
+    await safe('report', async () => {
+      const { shell } = require('electron');
+      const realOpen = shell.openExternal;
+      let opened = '';
+      shell.openExternal = async (url) => { opened = url; };
+      try {
+        x.command('feedback'); await wait(900);
+        const warns = await js(`document.querySelector('.report-modal .note.warn')?.textContent.includes('GitHub account') ?? false`);
+        const disabledEmpty = await js(`document.querySelector('.report-modal .btn.primary').disabled`);
+        await js(`(() => {
+          const set = (el, v) => { Object.getOwnPropertyDescriptor(Object.getPrototypeOf(el), 'value').set.call(el, v); el.dispatchEvent(new Event('input', { bubbles: true })); };
+          set(document.querySelector('.report-modal input.field'), 'Badge stuck at 0');
+          set(document.querySelector('.report-modal textarea'), 'It never updates');
+        })()`);
+        await wait(700);
+        await png(x.shellView.webContents, 'report');
+        await js(`document.querySelector('.report-modal .btn.primary').click()`); await wait(600);
+        const params = opened ? Object.fromEntries(new URL(opened).searchParams) : {};
+        const personal = ['test@example.com', 'Personal', 'Fixture'].filter((s) => opened.includes(encodeURIComponent(s)) || opened.includes(s));
+        step('report-problem', { warns, disabledEmpty, template: params.template, title: params.title, severity: params.severity, system: params.system, personal });
+        if (!(warns && disabledEmpty && params.template === 'bug_report.yml' && params.title === 'Badge stuck at 0' && params.system && !personal.length)) step('report-failed', {});
+      } finally {
+        shell.openExternal = realOpen;
+      }
+    });
+
+    // A website you add can get an icon from the pack and a color; both are saved and editable later.
+    await safe('look', async () => {
+      const setInput = (sel, v) => js(`(() => { const el = document.querySelector(${JSON.stringify(sel)}); Object.getOwnPropertyDescriptor(Object.getPrototypeOf(el), 'value').set.call(el, ${JSON.stringify(v)}); el.dispatchEvent(new Event('input', { bubbles: true })); })()`);
+      const idsBefore = new Set(x.store.workspace('w-test').instances.map((i) => i.id));
+      x.command('addService'); await wait(900);
+      await setInput('.custom-url input', 'web.telegram.org'); await wait(400);
+      await js(`[...document.querySelectorAll('.cu-prev .btn')].find((b) => b.textContent.includes('Icon'))?.click()`); await wait(500);
+      const suggested = await js(`document.querySelectorAll('.look-grid button:not(.site)')[0]?.title`);
+      await js(`document.querySelectorAll('.look-grid button:not(.site)')[0].click()`); await wait(200);
+      await js(`document.querySelectorAll('.look-colors .sw')[1].click()`); await wait(300);
+      await png(x.shellView.webContents, 'look-picker');
+      await js(`document.querySelector('.modal-f .btn.primary').click()`); await wait(1200);
+      const added = x.store.workspace('w-test').instances.find((i) => !idsBefore.has(i.id));
+      x.command('settings'); await wait(800);
+      await js(`[...document.querySelectorAll('.settings nav button')].find((b) => b.textContent.includes('Services')).click()`); await wait(500);
+      await js(`document.querySelector('.look-btn')?.click()`); await wait(400);
+      const editable = await js(`!!document.querySelector('.look-row .look-grid')`);
+      await png(x.shellView.webContents, 'look-settings');
+      await esc();
+      step('custom-icon-and-color', { suggested, icon: added?.icon, color: added?.color, editable });
+      if (!(suggested === 'Telegram' && added?.icon === 'brand-telegram' && added?.color === '#0EA5E9' && editable)) step('look-failed', {});
+      if (added) x.removeInstance('w-test', added.id);
+      x.selectInstance('w-test', 'i-fix');
+    });
 
     x.toggleZen(); await wait(500); await shot('zen'); x.toggleZen();
 
@@ -135,12 +214,30 @@ module.exports = async (x) => {
     const added = x.addInstances('w-test', [{ type: 'calendar' }, { type: 'drive' }]);
     const sessions = ['i-gm', ...added].map((id) => x.store.locate(id).inst.session);
     await require('electron').session.fromPartition('persist:w-test:google').cookies.set({ url: 'https://www.google.com', name: 'SID', value: 'e2e-test', domain: '.google.com', expirationDate: Date.now() / 1000 + 3600 });
-    for (let k = 0; k < 20 && !['i-gm', ...added].every((id) => x.store.statuses[id]?.signedIn); k++) await wait(250);
-    const signed = ['i-gm', ...added].map((id) => x.store.statuses[id]?.signedIn);
+    // Only the apps added later are checked: Gmail itself loads real Google, which rejects this fake cookie.
+    for (let k = 0; k < 20 && !added.every((id) => x.store.statuses[id]?.signedIn); k++) await wait(250);
+    const signed = added.map((id) => x.store.statuses[id]?.signedIn);
     step('shared-google-login', { addedTwoAtOnce: added.length === 2, sessions, signed });
     if (!(added.length === 2 && sessions.every((k) => k === 'google') && signed.every(Boolean))) step('shared-login-failed', {});
     for (const id of added) x.removeInstance('w-test', id);
     x.selectInstance('w-test', 'i-fix');
+
+    // An expired login that came from a browser is copied again from it. Here that browser is gone,
+    // so it must fall back to the signed-out screen once (no hang, no loop), and logging out forgets it.
+    await safe('resync', async () => {
+      const ws = x.store.workspace('w-test');
+      ws.loginSources = { google: { browserId: 'gone', browserName: 'Gone Browser', profileDir: 'Default' } };
+      x.store.locate('i-gm').inst.signedInOnce = true;
+      x.store.patchStatus('i-gm', { state: 'live' });
+      await gses.cookies.remove('https://www.google.com', 'SID');
+      for (let k = 0; k < 30 && x.store.statuses['i-gm']?.state !== 'signedout'; k++) await wait(250);
+      const tried = x.resyncedAt.has('w-test:google');
+      step('resync-fallback', { tried, state: x.store.statuses['i-gm']?.state });
+      if (!(tried && x.store.statuses['i-gm']?.state === 'signedout')) step('resync-failed', {});
+      await x.logOutInstance('i-gm');
+      step('logout-forgets-source', { source: ws.loginSources.google ?? null });
+      if (ws.loginSources.google) step('forget-source-failed', {});
+    });
 
     // Background activity must never pull the window in front of another app.
     x.win.blur();
@@ -179,6 +276,16 @@ module.exports = async (x) => {
     });
     if (!(before.includes('w-work%3Ai-li') && !x.store.workspace('w-work') && liCookiesAfter === 0)) step('sign-out-failed', {});
     step('final', { overlay: x.store.runtime.overlay, statuses: statuses(), historyCount: x.store.history.length });
+
+    // Quitting closes the window first: no timer may touch it afterwards ("Object has been destroyed" on ⌘Q).
+    let ticks = 0;
+    x.usage.tick = () => { ticks++; };
+    await wait(1500);
+    const ticksBefore = ticks;
+    x.win.emit('closed');
+    await wait(2500);
+    step('timers-stop-on-close', { ticking: ticksBefore > 0, ticksAfterClose: ticks - ticksBefore });
+    if (!(ticksBefore > 0 && ticks === ticksBefore)) step('timers-failed', {});
   } catch (e) {
     step('error', { e: String(e && e.stack || e) });
   }

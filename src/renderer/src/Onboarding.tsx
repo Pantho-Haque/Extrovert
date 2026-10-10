@@ -1,13 +1,15 @@
 /** First launch (no accounts yet): welcome → Google sign-in → pick services → shortcuts. */
 import { useState } from 'react';
+import { formatKeys, SHORTCUTS, type ShortcutId } from '../../core/guide/registry';
 import { catalog, parseCustomUrl } from '../../core/services/catalog';
 import type { AppSnapshot } from '../../shared/ipc';
 import type { ServiceType } from '../../shared/types';
 import { BrowserImport } from './BrowserImport';
 import { Icon } from './icons';
-import { act, isMac, mod } from './lib';
+import { act, isMac } from './lib';
 import { Brand, ServiceIcon } from './ui';
 
+const FIRST_KEYS: ShortcutId[] = ['palette', 'nextUnread', 'service', 'workspace', 'peek', 'lock'];
 const PICKABLE = catalog.filter((c) => c.group !== 'custom');
 const DEFAULT_PICKS: ServiceType[] = ['facebook', 'messenger', 'whatsapp', 'instagram', 'linkedin', 'gmail'];
 
@@ -116,8 +118,8 @@ export function Onboarding({ snap, onDone, onStart }: { snap: AppSnapshot; onDon
           )}
           <p className="lead">A few shortcuts worth knowing:</p>
           <div className="ob-keys">
-            {[[`${mod}K`, 'Jump anywhere, or paste a link'], [`${mod}J`, 'Next unread, across all accounts'], [`${mod}1–9`, 'Switch service'], [isMac ? '⌘⇧1–9' : 'Ctrl+Shift+1–9', 'Switch account'], [isMac ? '⌥ + hover' : 'Alt + hover', 'Peek at a service'], [isMac ? '⌘⇧L' : 'Ctrl+Shift+L', 'Lock & blur instantly']].map(([k, t]) => (
-              <div key={k}><kbd>{k}</kbd><span>{t}</span></div>
+            {SHORTCUTS.filter((k) => FIRST_KEYS.includes(k.id)).map((k) => (
+              <div key={k.id}><kbd>{formatKeys(k.keys, isMac)}</kbd><span>{k.label}</span></div>
             ))}
           </div>
           <div className="ob-f"><button className="btn primary" onClick={onDone}>Open my workspace</button></div>

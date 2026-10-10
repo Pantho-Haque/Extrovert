@@ -4,6 +4,7 @@
  */
 import type { DownloadEntry, Instance, InstanceStatus, NotificationEntry, ServiceType, Settings, Workspace, WorkHours } from './types';
 import type { SnoozeChoice } from '../core/notifications/rules';
+import type { Severity } from '../core/feedback/issue';
 
 export const CH = {
   state: 'state',
@@ -107,8 +108,8 @@ export interface Actions {
   signOut: [{ workspaceId: string }, void];
   signOutAll: [void, void];
   updateWorkspace: [{ workspaceId: string; patch: Partial<Pick<Workspace, 'name' | 'color' | 'suspended' | 'proxy'>> & { workHours?: WorkHours } }, void];
-  addInstances: [{ workspaceId: string; items: { type: ServiceType; url?: string; label?: string }[] }, string[]];
-  updateInstance: [Ref & { patch: Partial<Pick<Instance, 'label' | 'tag' | 'url' | 'enabled' | 'muted' | 'alerts' | 'sound' | 'badge' | 'autoplay' | 'permissions'>> }, void];
+  addInstances: [{ workspaceId: string; items: { type: ServiceType; url?: string; label?: string; icon?: string; color?: string }[] }, string[]];
+  updateInstance: [Ref & { patch: Partial<Pick<Instance, 'label' | 'tag' | 'url' | 'enabled' | 'muted' | 'alerts' | 'sound' | 'badge' | 'autoplay' | 'permissions' | 'icon' | 'color'>> }, void];
   removeInstance: [Ref, void];
   instanceMenu: [Ref, void];
   reload: [Partial<Ref>, void];
@@ -155,7 +156,8 @@ export interface Actions {
   clearDownloads: [void, void];
   checkUpdates: [void, void];
   installUpdate: [void, void];
-  sendFeedback: [{ text: string }, void];
+  systemInfo: [void, string];
+  reportProblem: [{ title: string; details: string; severity: Severity; where: string }, void];
   dismissToast: [{ id: string }, void];
   toast: [{ text: string }, void];
   showMainWindow: [void, void];
@@ -174,7 +176,7 @@ export type ActionPayload<K extends ActionName> = Actions[K][0];
 export type ActionResult<K extends ActionName> = Actions[K][1];
 
 /** Commands main sends to the shell (from menu shortcuts). */
-export type ShellCommand = 'palette' | 'replies' | 'settings' | 'notifications' | 'accountMenu' | 'addService' | 'insights' | 'taskManager' | 'find' | 'browserImport';
+export type ShellCommand = 'palette' | 'replies' | 'settings' | 'notifications' | 'accountMenu' | 'addService' | 'insights' | 'taskManager' | 'find' | 'browserImport' | 'guide' | 'tour' | 'feedback';
 
 export interface ExtrovertApi {
   platform: NodeJS.Platform;

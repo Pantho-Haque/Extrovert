@@ -20,7 +20,7 @@ Extrovert puts all your social and Google apps into one desktop workspace. Ferdi
 | Warns when a badge stops working | ✅ | — | — |
 | Find in page / back & forward | ✅ | ✅ | Users report missing |
 | Camera, mic & screen sharing for calls | ✅ Core feature | ✅ | Users report WhatsApp video calls failing |
-| Settings sync | Your own Google Drive, no server | Needs a Ferdium server (hosted or self-hosted) | Rambox account; device limits apply |
+| Settings sync | Planned: your own Google Drive, no server. Today: export/import a file | Needs a Ferdium server (hosted or self-hosted) | Rambox account; device limits apply |
 | Device limit | None | None | 1 active device on Basic, 3 on Pro |
 | Platforms | macOS, Windows, Linux | macOS, Windows, Linux | macOS, Windows, Linux |
 
@@ -33,7 +33,7 @@ Extrovert puts all your social and Google apps into one desktop workspace. Ferdi
 - **Notifications without previews.** Users report notifications that arrive as a badge only.
   **Extrovert:** native notifications with a message preview, plus a notification history covering every service.
 - **Sync needs a server.** Without a Ferdium server, reinstalling loses your setup unless you exported it first.
-  **Extrovert:** syncs your configuration through your own Google Drive. No server is involved.
+  **Extrovert:** lets you export your setup to a file and import it on another computer. Syncing through your own Google Drive, with no server involved, is planned.
 - **Community-only support.** Users also report notifications not arriving on some Linux setups (Wayland).
 
 ## Where Rambox falls short
@@ -55,7 +55,7 @@ Extrovert puts all your social and Google apps into one desktop workspace. Ferdi
 
 ## How Extrovert keeps quality high
 
-Every change to Extrovert must pass automated unit and end-to-end tests on macOS, Windows, and Linux before it's merged. Every bug fix comes with a test that proves it stays fixed.
+Every change to Extrovert must pass automated unit tests and end-to-end tests against the real app before it's merged. Every bug fix comes with a test that proves it stays fixed.
 
 ---
 

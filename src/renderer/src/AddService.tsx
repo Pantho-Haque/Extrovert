@@ -1,17 +1,21 @@
 /** Add services (FR-S01…S03): pick any number from the catalog, plus any website by its address, then add them together. */
 import { useState } from 'react';
 import { catalog, parseCustomUrl } from '../../core/services/catalog';
+import type { Look } from '../../core/services/look';
 import type { AppSnapshot } from '../../shared/ipc';
 import type { ServiceType, Workspace } from '../../shared/types';
 import { Icon } from './icons';
 import { act } from './lib';
 import type { Overlay } from './Shell';
+import { LookPicker } from './LookPicker';
 import { Modal, ServiceIcon } from './ui';
 
 export function AddService({ snap, ws, onClose, onOpen }: { snap: AppSnapshot; ws: Workspace; onClose: () => void; onOpen: (o: Overlay) => void }) {
   const [picked, setPicked] = useState<ServiceType[]>([]);
   const [url, setUrl] = useState('');
   const [busy, setBusy] = useState(false);
+  const [look, setLook] = useState<Look>({});
+  const [styling, setStyling] = useState(false);
   const custom = parseCustomUrl(url);
   const count = picked.length + (custom ? 1 : 0);
   const has = (type: ServiceType) => ws.instances.some((i) => i.type === type);
@@ -21,8 +25,8 @@ export function AddService({ snap, ws, onClose, onOpen }: { snap: AppSnapshot; w
 
   const add = async () => {
     setBusy(true);
-    const items: { type: ServiceType; url?: string; label?: string }[] = picked.map((type) => ({ type }));
-    if (custom) items.push({ type: 'custom', url: custom.url, label: custom.name });
+    const items: { type: ServiceType; url?: string; label?: string; icon?: string; color?: string }[] = picked.map((type) => ({ type }));
+    if (custom) items.push({ type: 'custom', url: custom.url, label: custom.name, ...(look.icon ? { icon: look.icon, color: look.color } : {}) });
     await act('addInstances', { workspaceId: ws.id, items });
     onClose();
   };
@@ -52,7 +56,16 @@ export function AddService({ snap, ws, onClose, onOpen }: { snap: AppSnapshot; w
         <Icon name="link" size={16} />
         <input placeholder="Paste an address, e.g. web.telegram.org" value={url} onChange={(e) => setUrl(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && count && !busy && void add()} />
       </div>
-      {custom && <div className="cu-prev"><Icon name="globe" size={24} /><div><b>{custom.name}</b><small>{custom.url}</small></div></div>}
+      {custom && (
+        <>
+          <div className="cu-prev">
+            <ServiceIcon type="custom" look={look} size={36} />
+            <div><b>{custom.name}</b><small>{custom.url}</small></div>
+            <button className="btn sm" aria-expanded={styling} onClick={() => setStyling(!styling)}><Icon name="star" size={14} /> Icon & color</button>
+          </div>
+          {styling && <LookPicker look={look} url={custom.url} onChange={setLook} />}
+        </>
+      )}
       {snap.platform === 'darwin' && (
         <div className="note"><Icon name="login" size={16} /><p>Already logged in to these sites in Arc, Chrome or another browser? <button className="linkish" onClick={() => onOpen({ kind: 'browserImport' })}>Sign in with your browser</button> after adding them.</p></div>
       )}

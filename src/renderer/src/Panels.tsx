@@ -77,7 +77,7 @@ export function PeekPanel({ snap }: { snap: AppSnapshot }) {
   return (
     <div className="panel-root">
       <div className="peek">
-        <div className="peek-h"><ServiceIcon type={loc.inst.type} name={instanceName(loc.inst)} status={snap.statuses[loc.inst.id]} size={18} /><b>{instanceName(loc.inst)}</b><span>{loc.ws.name}</span><small>Live snapshot</small></div>
+        <div className="peek-h"><ServiceIcon type={loc.inst.type} look={loc.inst} name={instanceName(loc.inst)} status={snap.statuses[loc.inst.id]} size={18} /><b>{instanceName(loc.inst)}</b><span>{loc.ws.name}</span><small>Live snapshot</small></div>
         <img src={peek.image} alt={`Snapshot of ${instanceName(loc.inst)}`} />
       </div>
     </div>
@@ -104,7 +104,7 @@ export function TrayPanel({ snap }: { snap: AppSnapshot }) {
             <div className="tray-wsh"><Avatar ws={w} size={18} />&nbsp;<b>{w.name}</b>{n > 0 && <em className="badge inline">{n}</em>}</div>
             <div className="tray-svcs">
               {unread.length ? unread.map((i) => (
-                <button key={i.id} onClick={() => open(w.id, i.id)} title={instanceName(i)}><ServiceIcon type={i.type} name={instanceName(i)} status={snap.statuses[i.id]} size={20} /><b>{snap.statuses[i.id]!.unread}</b></button>
+                <button key={i.id} onClick={() => open(w.id, i.id)} title={instanceName(i)}><ServiceIcon type={i.type} look={i} name={instanceName(i)} status={snap.statuses[i.id]} size={20} /><b>{snap.statuses[i.id]!.unread}</b></button>
               )) : <small className="muted">All caught up</small>}
             </div>
           </div>
@@ -115,7 +115,7 @@ export function TrayPanel({ snap }: { snap: AppSnapshot }) {
         const loc = findInstance(snap, n.instanceId);
         return (
           <button key={n.id} className="tray-n" onClick={() => { void act('openNotification', { id: n.id }); void act('showMainWindow'); }}>
-            {loc ? <ServiceIcon type={loc.inst.type} name={instanceName(loc.inst)} status={snap.statuses[loc.inst.id]} size={16} /> : <span />}<b>{n.sender}</b><span>{n.body}</span>
+            {loc ? <ServiceIcon type={loc.inst.type} look={loc.inst} name={instanceName(loc.inst)} status={snap.statuses[loc.inst.id]} size={16} /> : <span />}<b>{n.sender}</b><span>{n.body}</span>
           </button>
         );
       })}

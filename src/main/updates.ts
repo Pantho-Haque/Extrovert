@@ -8,7 +8,7 @@ import electronUpdater from 'electron-updater';
 import type { Extrovert } from './app';
 
 const { autoUpdater } = electronUpdater;
-const RELEASES = 'https://github.com/Pantho-Haque/extrovert/releases/latest';
+const RELEASES = 'https://github.com/Pantho-Haque/Extrovert/releases/latest';
 const SIX_HOURS = 6 * 3_600_000;
 
 export class Updates {

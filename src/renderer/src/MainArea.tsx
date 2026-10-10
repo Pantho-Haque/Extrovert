@@ -62,6 +62,12 @@ export function MainArea({ snap, ws, onOpen }: { snap: AppSnapshot; ws: Workspac
           {snap.platform === 'darwin' && <button className="btn" onClick={() => onOpen({ kind: 'browserImport' })}>Use my browser's login</button>}
         </StateCard>
       );
+    case 'syncing':
+      return (
+        <StateCard icon="refresh" title={`Reconnecting ${name}…`} text={`Its login expired here, so Extrovert is copying it again from ${ws.loginSources?.[inst.session]?.browserName ?? 'your browser'}. If macOS asks for access, choose "Always Allow" so it happens silently next time.`}>
+          <div className="spinner" />
+        </StateCard>
+      );
     case 'offline':
       return (
         <StateCard icon="wifi" title="You're offline" text={`${name} reloads automatically when the connection is back.`}>

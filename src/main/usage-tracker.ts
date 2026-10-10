@@ -22,7 +22,7 @@ export class UsageTracker {
     });
     powerMonitor.on('unlock-screen', () => (this.screenLocked = false));
     powerMonitor.on('suspend', () => (this.awaySince ??= Date.now()));
-    setInterval(() => this.tick(), 1000);
+    app.every(1000, () => this.tick());
   }
 
   setPlaying(instanceId: string, playing: boolean): void {

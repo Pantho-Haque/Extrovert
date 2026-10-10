@@ -1,0 +1,546 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Extrovert: all your communities, one space</title>
+<meta name="description" content="Free, open-source desktop app for Facebook, Messenger, WhatsApp, Instagram, LinkedIn, Gmail and any website. One workspace per Google account, live badges, real notifications. No account, no server, no tracking.">
+<meta property="og:title" content="Extrovert: all your communities, one space">
+<meta property="og:description" content="Facebook, Messenger, WhatsApp, Instagram, LinkedIn, Google apps and any website in one window. Free and open source for macOS, Windows and Linux.">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#4F46E5">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='6' fill='%234F46E5'/%3E%3Ccircle cx='9' cy='12' r='5.4' fill='none' stroke='white' stroke-width='2.2'/%3E%3Ccircle cx='15' cy='12' r='5.4' fill='none' stroke='white' stroke-width='2.2'/%3E%3C/svg%3E">
+<!--
+  Generated parts: the blocks between the "guide:NAME" markers come from src/core/guide/registry.ts.
+  Edit the registry and run `pnpm sync-docs`; don't edit those parts by hand. The rest is hand-written:
+  keep it true to the app (see .claude/skills/extrovert-docs-sync).
+-->
+<style>
+:root {
+  --accent: #4F46E5; --violet: #8B5CF6; --pink: #EC4899;
+  --bg: #FFFFFF; --soft: #F6F7FB; --card: #FFFFFF; --text: #0F172A; --muted: #5B6478; --line: #E5E7EB;
+  --shadow: 0 20px 50px rgba(15, 23, 42, .14), 0 3px 10px rgba(15, 23, 42, .06);
+}
+@media (prefers-color-scheme: dark) {
+  :root { --bg: #0E1015; --soft: #15171E; --card: #1B1E27; --text: #E5E7EB; --muted: #94A3B8; --line: #2A2E3A; --shadow: 0 20px 50px rgba(0, 0, 0, .5); }
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, sans-serif; -webkit-font-smoothing: antialiased; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+.wrap { max-width: 1120px; margin: 0 auto; padding: 0 24px; }
+svg.i, svg.b { width: 20px; height: 20px; flex-shrink: 0; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+kbd { padding: 1px 7px; border: 1px solid var(--line); border-radius: 6px; background: var(--soft); color: var(--muted); font: 12px ui-monospace, SFMono-Regular, monospace; white-space: nowrap; }
+section { padding: 88px 0; }
+section.alt { background: var(--soft); }
+h2 { margin: 0 0 10px; font-size: clamp(28px, 4vw, 40px); line-height: 1.15; letter-spacing: -.02em; }
+.sub { max-width: 640px; margin: 0 0 40px; color: var(--muted); font-size: 18px; }
+.eyebrow { display: inline-block; margin-bottom: 10px; color: var(--accent); font-size: 13px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+
+/* Nav */
+nav { position: sticky; top: 0; z-index: 10; border-bottom: 1px solid var(--line); background: color-mix(in srgb, var(--bg) 85%, transparent); backdrop-filter: blur(12px); }
+nav .wrap { display: flex; gap: 28px; align-items: center; height: 64px; }
+.logo { display: flex; gap: 10px; align-items: center; color: var(--text); font-weight: 700; font-size: 18px; }
+.logo:hover { text-decoration: none; }
+.mark { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 9px; background: linear-gradient(135deg, var(--accent), var(--violet) 60%, var(--pink)); }
+nav .links { display: flex; flex: 1; gap: 22px; font-size: 15px; }
+nav .links a { color: var(--muted); }
+@media (max-width: 760px) { nav .links { display: none; } }
+
+/* Buttons */
+.btn { display: inline-flex; gap: 8px; align-items: center; padding: 12px 20px; border: 1px solid var(--line); border-radius: 12px; background: var(--card); color: var(--text); font-weight: 600; font-size: 15px; }
+.btn:hover { text-decoration: none; border-color: var(--muted); }
+.btn.primary { border-color: transparent; background: var(--accent); color: #fff; box-shadow: 0 8px 20px rgba(79, 70, 229, .35); }
+.btn.primary:hover { background: #4338CA; }
+.btn.sm { padding: 8px 14px; font-size: 14px; }
+
+/* Hero */
+.hero { padding: 80px 0 40px; overflow: hidden; background: radial-gradient(1200px 500px at 70% -10%, rgba(139, 92, 246, .22), transparent), radial-gradient(800px 400px at 0% 10%, rgba(79, 70, 229, .16), transparent); }
+.hero .wrap { display: grid; grid-template-columns: 1fr 1.15fr; gap: 56px; align-items: center; }
+@media (max-width: 960px) { .hero .wrap { grid-template-columns: 1fr; } }
+.hero h1 { margin: 0 0 18px; font-size: clamp(40px, 6vw, 64px); line-height: 1.05; letter-spacing: -.03em; }
+.hero h1 span { background: linear-gradient(90deg, var(--accent), var(--violet), var(--pink)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.hero p.lead { margin: 0 0 28px; color: var(--muted); font-size: 19px; }
+.cta { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 18px; }
+.fine { color: var(--muted); font-size: 14px; }
+.os { display: flex; gap: 14px; margin-top: 6px; color: var(--muted); }
+
+/* App mock (simulated, drawn in HTML) */
+.mock { position: relative; overflow: hidden; border: 1px solid var(--line); border-radius: 16px; background: var(--card); box-shadow: var(--shadow); }
+.mock-bar { display: flex; gap: 7px; align-items: center; height: 34px; padding: 0 14px; border-bottom: 1px solid var(--line); color: var(--muted); font-size: 12px; }
+.mock-bar i { width: 11px; height: 11px; border-radius: 50%; background: #FF5F57; }
+.mock-bar i:nth-child(2) { background: #FEBC2E; }
+.mock-bar i:nth-child(3) { background: #28C840; }
+.mock-bar span { flex: 1; text-align: center; margin-right: 50px; }
+.mock-body { display: grid; grid-template-columns: 64px 1fr; height: 480px; }
+.mock-sb { display: flex; flex-direction: column; gap: 10px; align-items: center; padding: 12px 0; border-right: 1px solid var(--line); background: var(--soft); }
+.av { position: relative; display: grid; place-items: center; width: 38px; height: 38px; border: 2px solid var(--accent); border-radius: 50%; background: linear-gradient(135deg, #F59E0B, #EC4899); color: #fff; font-weight: 700; }
+.tile { position: relative; display: grid; place-items: center; width: 38px; height: 38px; border-radius: 11px; background: color-mix(in srgb, var(--c) 16%, transparent); color: var(--c); }
+.tile svg { width: 22px; height: 22px; }
+.tile.on::before { content: ""; position: absolute; left: -13px; width: 3px; height: 20px; border-radius: 0 3px 3px 0; background: var(--accent); }
+.grp { display: flex; flex-direction: column; gap: 6px; padding: 4px; border-radius: 14px; background: color-mix(in srgb, var(--text) 6%, transparent); }
+.badge { position: absolute; top: -5px; right: -6px; min-width: 18px; height: 18px; padding: 0 5px; border: 2px solid var(--soft); border-radius: 9px; background: #EF4444; color: #fff; font-size: 10px; font-weight: 700; line-height: 14px; text-align: center; }
+.tag { position: absolute; bottom: -3px; left: -4px; padding: 0 4px; border-radius: 4px; background: #F59E0B; color: #fff; font-size: 9px; font-weight: 700; }
+.mock-main { position: relative; display: grid; grid-template-columns: 200px 1fr; }
+.chats { padding: 12px; border-right: 1px solid var(--line); }
+.chat { display: flex; gap: 10px; align-items: center; padding: 8px; border-radius: 10px; }
+.chat.on { background: color-mix(in srgb, #25D366 12%, transparent); }
+.chat .p { width: 32px; height: 32px; border-radius: 50%; background: var(--c); flex-shrink: 0; }
+.ln { height: 8px; border-radius: 4px; background: color-mix(in srgb, var(--text) 12%, transparent); }
+.convo { display: flex; flex-direction: column; gap: 10px; justify-content: flex-end; padding: 18px; }
+.msg { max-width: 70%; padding: 9px 13px; border-radius: 14px; background: var(--soft); font-size: 13px; }
+.msg.me { align-self: flex-end; background: color-mix(in srgb, #25D366 20%, transparent); }
+.toast { position: absolute; right: 16px; top: 16px; display: flex; gap: 10px; width: 270px; padding: 12px; border: 1px solid var(--line); border-radius: 14px; background: var(--card); box-shadow: var(--shadow); font-size: 13px; animation: drop .6s 1s both; }
+.toast small { display: block; color: var(--muted); }
+@keyframes drop { from { opacity: 0; transform: translateY(-14px); } }
+@media (max-width: 560px) { .mock-main { grid-template-columns: 1fr; } .chats { display: none; } }
+
+/* Works with */
+.works { padding: 28px 0 0; }
+.works .wrap { display: flex; flex-wrap: wrap; gap: 14px 22px; align-items: center; justify-content: center; color: var(--muted); font-size: 14px; }
+.works span { display: inline-flex; gap: 7px; align-items: center; }
+.works svg { width: 22px; height: 22px; color: var(--c); }
+
+/* Cards */
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px; }
+.hl { padding: 22px; border: 1px solid var(--line); border-radius: 16px; background: var(--card); }
+.hl svg { width: 24px; height: 24px; padding: 8px; box-sizing: content-box; border-radius: 10px; background: color-mix(in srgb, var(--accent) 14%, transparent); color: var(--accent); }
+.hl b { display: block; margin: 14px 0 4px; font-size: 17px; }
+.hl p { margin: 0; color: var(--muted); font-size: 15px; }
+
+.pillars { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 8px; }
+@media (max-width: 860px) { .pillars { grid-template-columns: 1fr; } }
+.pillar { padding: 26px; border-radius: 18px; background: linear-gradient(160deg, color-mix(in srgb, var(--accent) 12%, var(--card)), var(--card)); border: 1px solid var(--line); }
+.pillar h3 { margin: 0 0 6px; font-size: 20px; }
+.pillar p { margin: 0; color: var(--muted); }
+
+/* Feature groups (generated) */
+.features { columns: 2 420px; column-gap: 20px; }
+.fgroup { break-inside: avoid; margin: 0 0 20px; padding: 24px; border: 1px solid var(--line); border-radius: 18px; background: var(--card); }
+.fgroup h3 { margin: 0; font-size: 20px; }
+.fgroup .tagline { margin: 2px 0 14px; color: var(--muted); }
+.fgroup ul { margin: 0; padding: 0; list-style: none; }
+.fgroup li { padding: 10px 0; border-top: 1px solid var(--line); }
+.fgroup li b { margin-right: 6px; }
+.fgroup li span { display: block; color: var(--muted); font-size: 15px; }
+.chip { padding: 1px 7px; border-radius: 6px; background: color-mix(in srgb, var(--accent) 14%, transparent); color: var(--accent); font-size: 11px; font-weight: 700; }
+
+/* Comparison */
+.tbl { overflow-x: auto; border: 1px solid var(--line); border-radius: 16px; background: var(--card); }
+table { width: 100%; border-collapse: collapse; font-size: 15px; }
+th, td { padding: 13px 16px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+tr:last-child td { border-bottom: 0; }
+thead th { background: var(--soft); font-size: 14px; }
+th.us, td.us { background: color-mix(in srgb, var(--accent) 7%, transparent); }
+td.y { color: #16A34A; font-weight: 600; }
+td.n { color: var(--muted); }
+.note { margin-top: 14px; color: var(--muted); font-size: 14px; }
+
+/* Privacy */
+.two { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+@media (max-width: 760px) { .two { grid-template-columns: 1fr; } }
+
+/* Shortcuts (generated) */
+.keys { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 0 32px; }
+.keys div { display: grid; grid-template-columns: 130px 1fr; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--line); font-size: 15px; }
+.keys kbd { justify-self: start; }
+
+/* Install */
+.steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+@media (max-width: 860px) { .steps { grid-template-columns: 1fr; } }
+.step { padding: 24px; border: 1px solid var(--line); border-radius: 16px; background: var(--card); }
+.step h3 { display: flex; gap: 8px; align-items: center; margin: 0 0 8px; }
+.step p, .step li { color: var(--muted); font-size: 15px; }
+.step code { padding: 1px 5px; border-radius: 5px; background: var(--soft); font-size: 13px; }
+
+/* FAQ */
+details { padding: 18px 0; border-bottom: 1px solid var(--line); }
+summary { cursor: pointer; font-weight: 600; font-size: 17px; }
+details p { margin: 10px 0 0; color: var(--muted); }
+
+.final { text-align: center; }
+.final .cta { justify-content: center; }
+footer { padding: 36px 0; border-top: 1px solid var(--line); color: var(--muted); font-size: 14px; }
+footer .wrap { display: flex; flex-wrap: wrap; gap: 18px; justify-content: space-between; }
+footer nav { position: static; border: 0; background: none; backdrop-filter: none; }
+footer .links { display: flex; gap: 18px; }
+</style>
+</head>
+<body>
+<!-- guide:icons -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><symbol id="i-users" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></symbol><symbol id="i-globe" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></symbol><symbol id="i-bell" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></symbol><symbol id="i-zap" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></symbol><symbol id="i-shield" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></symbol><symbol id="i-coffee" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></symbol><symbol id="i-activity" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></symbol><symbol id="i-upload" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></symbol></svg>
+<!-- /guide:icons -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+<symbol id="b-facebook" viewBox="0 0 24 24"><path d="M7 10v4h3v7h4v-7h3l1 -4h-4v-2a1 1 0 0 1 1 -1h3v-4h-3a5 5 0 0 0 -5 5v2h-3"/></symbol>
+<symbol id="b-messenger" viewBox="0 0 24 24"><path d="M3 20l1.3 -3.9a9 8 0 1 1 3.4 2.9l-4.7 1"/><path d="M8 13l3 -2l2 2l3 -2"/></symbol>
+<symbol id="b-whatsapp" viewBox="0 0 24 24"><path d="M3 21l1.65 -3.8a9 9 0 1 1 3.4 2.9l-5.05 .9"/><path d="M9 10a.5 .5 0 0 0 1 0v-1a.5 .5 0 0 0 -1 0v1a5 5 0 0 0 5 5h1a.5 .5 0 0 0 0 -1h-1a.5 .5 0 0 0 0 1"/></symbol>
+<symbol id="b-instagram" viewBox="0 0 24 24"><path d="M3 7a4 4 0 0 1 4 -4h10a4 4 0 0 1 4 4v10a4 4 0 0 1 -4 4h-10a4 4 0 0 1 -4 -4l0 -10"/><path d="M8.5 12a3.5 3.5 0 1 0 7 0a3.5 3.5 0 0 0 -7 0"/><path d="M17 7v.01"/></symbol>
+<symbol id="b-linkedin" viewBox="0 0 24 24"><path d="M8 11v5"/><path d="M8 8v.01"/><path d="M12 16v-5"/><path d="M16 16v-3a2 2 0 1 0 -4 0"/><path d="M3 7a4 4 0 0 1 4 -4h10a4 4 0 0 1 4 4v10a4 4 0 0 1 -4 4h-10a4 4 0 0 1 -4 -4l0 -10"/></symbol>
+<symbol id="b-gmail" viewBox="0 0 24 24"><path d="M16 20h3a1 1 0 0 0 1 -1v-14a1 1 0 0 0 -1 -1h-3v16"/><path d="M5 20h3v-16h-3a1 1 0 0 0 -1 1v14a1 1 0 0 0 1 1"/><path d="M16 4l-4 4l-4 -4"/><path d="M4 6.5l8 7.5l8 -7.5"/></symbol>
+<symbol id="b-drive" viewBox="0 0 24 24"><path d="M12 10l-6 10l-3 -5l6 -10l3 5"/><path d="M9 15h12l-3 5h-12"/><path d="M15 15l-6 -10h6l6 10l-6 0"/></symbol>
+<symbol id="b-calendar" viewBox="0 0 24 24"><path d="M4 7a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2l0 -12"/><path d="M16 3l0 4"/><path d="M8 3l0 4"/><path d="M4 11l16 0"/><path d="M8 15h2v2h-2l0 -2"/></symbol>
+<symbol id="b-meet" viewBox="0 0 24 24"><path d="M15 10l4.553 -2.276a1 1 0 0 1 1.447 .894v6.764a1 1 0 0 1 -1.447 .894l-4.553 -2.276v-4"/><path d="M3 8a2 2 0 0 1 2 -2h8a2 2 0 0 1 2 2v8a2 2 0 0 1 -2 2h-8a2 2 0 0 1 -2 -2l0 -8"/></symbol>
+<symbol id="b-chat" viewBox="0 0 24 24"><path d="M21 14l-3 -3h-7a1 1 0 0 1 -1 -1v-6a1 1 0 0 1 1 -1h9a1 1 0 0 1 1 1v10"/><path d="M14 15v2a1 1 0 0 1 -1 1h-7l-3 3v-10a1 1 0 0 1 1 -1h2"/></symbol>
+<symbol id="b-world" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0"/><path d="M3.6 9h16.8"/><path d="M3.6 15h16.8"/><path d="M11.5 3a17 17 0 0 0 0 18"/><path d="M12.5 3a17 17 0 0 1 0 18"/></symbol>
+<symbol id="b-github" viewBox="0 0 24 24"><path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5"/></symbol>
+<symbol id="b-apple" viewBox="0 0 24 24"><path d="M8.286 7.008c-3.216 0 -4.286 3.23 -4.286 5.92c0 3.229 2.143 8.072 4.286 8.072c1.165 -.05 1.799 -.538 3.214 -.538c1.406 0 1.607 .538 3.214 .538s4.286 -3.229 4.286 -5.381c-.03 -.011 -2.649 -.434 -2.679 -3.23c-.02 -2.335 2.589 -3.179 2.679 -3.228c-1.096 -1.606 -3.162 -2.113 -3.75 -2.153c-1.535 -.12 -3.032 1.077 -3.75 1.077c-.729 0 -2.036 -1.077 -3.214 -1.077"/><path d="M12 4a2 2 0 0 0 2 -2a2 2 0 0 0 -2 2"/></symbol>
+<symbol id="b-windows" viewBox="0 0 24 24"><path d="M17.8 20l-12 -1.5c-1 -.1 -1.8 -.9 -1.8 -1.9v-9.2c0 -1 .8 -1.8 1.8 -1.9l12 -1.5c1.2 -.1 2.2 .8 2.2 1.9v12.1c0 1.2 -1.1 2.1 -2.2 1.9l0 .1"/><path d="M12 5l0 14"/><path d="M4 12l16 0"/></symbol>
+<symbol id="b-linux" viewBox="0 0 24 24"><path d="M10 5a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"/><path d="M17.723 7.41a7.992 7.992 0 0 0 -3.74 -2.162m-3.971 0a7.993 7.993 0 0 0 -3.789 2.216m-1.881 3.215a8 8 0 0 0 -.342 2.32c0 .738 .1 1.453 .287 2.132m1.96 3.428a7.993 7.993 0 0 0 3.759 2.19m4 0a7.993 7.993 0 0 0 3.747 -2.186m1.962 -3.43a8.008 8.008 0 0 0 .287 -2.131c0 -.764 -.107 -1.503 -.307 -2.203"/><path d="M3 17a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"/><path d="M17 17a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"/></symbol>
+</svg>
+
+<nav>
+  <div class="wrap">
+    <a class="logo" href="#"><span class="mark"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><circle cx="9" cy="12" r="5.4" fill="none" stroke="#fff" stroke-width="2.2"/><circle cx="15" cy="12" r="5.4" fill="none" stroke="#fff" stroke-width="2.2"/></svg></span>Extrovert</a>
+    <div class="links"><a href="#why">Why Extrovert</a><a href="#features">Features</a><a href="#compare">Compare</a><a href="#privacy">Privacy</a><a href="#faq">FAQ</a></div>
+    <a class="btn sm" href="https://github.com/Pantho-Haque/Extrovert"><svg class="b"><use href="#b-github"/></svg> GitHub</a>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="wrap">
+    <div>
+      <span class="eyebrow">Free · Open source · macOS, Windows, Linux</span>
+      <h1>All your communities. <span>One space.</span></h1>
+      <p class="lead">Facebook, Messenger, WhatsApp, Instagram, LinkedIn, Gmail and any website, in one window. Every app is the real website, untouched. One workspace per Google account, so work and personal never mix.</p>
+      <div class="cta">
+        <a class="btn primary" id="download" href="https://github.com/Pantho-Haque/Extrovert/releases/latest"><svg class="b"><use href="#b-apple" id="os-icon"/></svg> <span id="os-label">Download</span></a>
+        <a class="btn" href="#features">See what it does</a>
+      </div>
+      <p class="fine">No account with us. No server. No tracking. Everything stays on your computer.</p>
+    </div>
+
+    <!-- Simulated app window: drawn in HTML, not a screenshot. -->
+    <div class="mock" aria-label="Extrovert, showing a WhatsApp chat with live badges on other apps" role="img">
+      <div class="mock-bar"><i></i><i></i><i></i><span>WhatsApp · Personal</span></div>
+      <div class="mock-body">
+        <div class="mock-sb">
+          <span class="av">P<span class="badge">5</span></span>
+          <span class="tile" style="--c:#1877F2"><svg class="b"><use href="#b-facebook"/></svg><span class="badge">2</span></span>
+          <span class="tile" style="--c:#A033FF"><svg class="b"><use href="#b-messenger"/></svg></span>
+          <span class="grp">
+            <span class="tile on" style="--c:#25D366"><svg class="b"><use href="#b-whatsapp"/></svg></span>
+            <span class="tile" style="--c:#25D366"><svg class="b"><use href="#b-whatsapp"/></svg><span class="badge">4</span><span class="tag">B</span></span>
+          </span>
+          <span class="tile" style="--c:#DD2A7B"><svg class="b"><use href="#b-instagram"/></svg><span class="badge">1</span></span>
+          <span class="tile" style="--c:#0A66C2"><svg class="b"><use href="#b-linkedin"/></svg></span>
+          <span class="tile" style="--c:#EA4335"><svg class="b"><use href="#b-gmail"/></svg><span class="badge">12</span></span>
+          <span class="tile" style="--c:#4285F4"><svg class="b"><use href="#b-calendar"/></svg></span>
+        </div>
+        <div class="mock-main">
+          <div class="chats">
+            <div class="chat on"><span class="p" style="--c:#F97316"></span><div style="flex:1"><div class="ln" style="width:70%"></div><div class="ln" style="width:90%;margin-top:6px;opacity:.6"></div></div></div>
+            <div class="chat"><span class="p" style="--c:#0EA5E9"></span><div style="flex:1"><div class="ln" style="width:55%"></div><div class="ln" style="width:80%;margin-top:6px;opacity:.6"></div></div></div>
+            <div class="chat"><span class="p" style="--c:#10B981"></span><div style="flex:1"><div class="ln" style="width:65%"></div><div class="ln" style="width:70%;margin-top:6px;opacity:.6"></div></div></div>
+            <div class="chat"><span class="p" style="--c:#8B5CF6"></span><div style="flex:1"><div class="ln" style="width:45%"></div><div class="ln" style="width:85%;margin-top:6px;opacity:.6"></div></div></div>
+          </div>
+          <div class="convo">
+            <div class="msg">Are we still on for tonight?</div>
+            <div class="msg me">Yes! 8 pm 🙌</div>
+            <div class="msg">Perfect, see you there</div>
+          </div>
+          <div class="toast"><span class="tile" style="--c:#0A66C2;width:32px;height:32px"><svg class="b"><use href="#b-linkedin"/></svg></span><div><b>Sara Ahmed</b><small>LinkedIn · Work</small>Thanks for the intro, let's talk Monday.</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="works">
+    <div class="wrap">
+      <span style="--c:#1877F2"><svg class="b"><use href="#b-facebook"/></svg>Facebook</span>
+      <span style="--c:#A033FF"><svg class="b"><use href="#b-messenger"/></svg>Messenger</span>
+      <span style="--c:#25D366"><svg class="b"><use href="#b-whatsapp"/></svg>WhatsApp</span>
+      <span style="--c:#DD2A7B"><svg class="b"><use href="#b-instagram"/></svg>Instagram</span>
+      <span style="--c:#0A66C2"><svg class="b"><use href="#b-linkedin"/></svg>LinkedIn</span>
+      <span style="--c:#EA4335"><svg class="b"><use href="#b-gmail"/></svg>Gmail</span>
+      <span style="--c:#4285F4"><svg class="b"><use href="#b-calendar"/></svg>Calendar</span>
+      <span style="--c:#34A853"><svg class="b"><use href="#b-drive"/></svg>Drive</span>
+      <span style="--c:#00897B"><svg class="b"><use href="#b-meet"/></svg>Meet</span>
+      <span style="--c:#34A853"><svg class="b"><use href="#b-chat"/></svg>Chat</span>
+      <span style="--c:#64748B"><svg class="b"><use href="#b-world"/></svg>Any website</span>
+    </div>
+  </div>
+</header>
+
+<section id="why">
+  <div class="wrap">
+    <span class="eyebrow">Why Extrovert</span>
+    <h2>Be social without being managed by social media.</h2>
+    <p class="sub">Other hubs put your apps in tabs. Extrovert also helps you see what matters, keeps work and personal apart, and protects your screen and your time.</p>
+    <div class="pillars">
+      <div class="pillar"><h3>Workspaces that are real identities</h3><p>Each Google account is its own workspace with its own logins. Its avatar shows its unread count, so you know work has 5 new things without switching to it.</p></div>
+      <div class="pillar"><h3>Every app, untouched</h3><p>Extrovert never changes or automates the sites it shows. You get the real Facebook, the real WhatsApp, exactly as you know them.</p></div>
+      <div class="pillar"><h3>Free, with nothing held back</h3><p>Every feature, unlimited accounts and unlimited websites, on as many computers as you like. Open source under the MIT license.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="alt">
+  <div class="wrap">
+    <span class="eyebrow">Only in Extrovert</span>
+    <h2>Things no other hub does.</h2>
+    <p class="sub">As far as our research shows (October 2026), Ferdium, Rambox, Wavebox and Shift don't offer these.</p>
+    <div class="grid">
+<!-- guide:highlights -->
+<div class="hl"><svg class="i"><use href="#i-users"/></svg><b>Switch accounts in one click</b><p>The Gmail-style account menu shows every account with its unread count.</p></div>
+<div class="hl"><svg class="i"><use href="#i-bell"/></svg><b>Next unread</b><p>Jump to the next service with something new, across all accounts, until you reach inbox zero.</p></div>
+<div class="hl"><svg class="i"><use href="#i-bell"/></svg><b>People view</b><p>See who is waiting on you, grouped by person across platforms.</p></div>
+<div class="hl"><svg class="i"><use href="#i-bell"/></svg><b>VIPs</b><p>Messages from your VIPs break through Do Not Disturb and digests.</p></div>
+<div class="hl"><svg class="i"><use href="#i-bell"/></svg><b>Snooze to the exact chat</b><p>A snoozed notification reopens that exact conversation when it comes back.</p></div>
+<div class="hl"><svg class="i"><use href="#i-bell"/></svg><b>While-you-were-away recap</b><p>Back from a break? One card shows who wrote to you, and where.</p></div>
+<div class="hl"><svg class="i"><use href="#i-bell"/></svg><b>Login watchdog</b><p>If a service signs you out, you're told right away instead of silently missing messages.</p></div>
+<div class="hl"><svg class="i"><use href="#i-zap"/></svg><b>Peek</b><p>See a live snapshot of another service without switching.</p></div>
+<div class="hl"><svg class="i"><use href="#i-shield"/></svg><b>Camera, mic and screen indicators</b><p>A live dot shows which service is using your camera, microphone or screen.</p></div>
+<div class="hl"><svg class="i"><use href="#i-shield"/></svg><b>Call bubble</b><p>Switch away during a call and it keeps going in a small floating window.</p></div>
+<div class="hl"><svg class="i"><use href="#i-shield"/></svg><b>Screen-share shield</b><p>While you share your screen, previews and other accounts are hidden automatically.</p></div>
+<div class="hl"><svg class="i"><use href="#i-coffee"/></svg><b>Time insights</b><p>Private time per service and account, today and this week. Only counts while you actually use it.</p></div>
+<div class="hl"><svg class="i"><use href="#i-coffee"/></svg><b>Feed guard</b><p>Daily budgets for feeds, with a gentle &quot;still want to scroll?&quot; Messaging is never limited.</p></div>
+<!-- /guide:highlights -->
+    </div>
+  </div>
+</section>
+
+<section id="features">
+  <div class="wrap">
+    <span class="eyebrow">Everything it does</span>
+    <h2>Every feature, in one list.</h2>
+    <p class="sub">This list comes straight from the app, so it's always current.</p>
+    <div class="features">
+<!-- guide:features -->
+<article class="fgroup" id="workspaces">
+  <h3>Workspaces</h3>
+  <p class="tagline">One per Google account. Work and personal never mix.</p>
+  <ul>
+    <li><b>A workspace per Google account</b><span>Sign in with Google once per account. Work and personal never mix.</span></li>
+    <li><b>Switch accounts in one click</b> <kbd>⌘⇧1–9</kbd><span>The Gmail-style account menu shows every account with its unread count.</span></li>
+    <li><b>Several accounts of the same app</b><span>Two WhatsApps or three Gmails sit side by side, grouped and tagged so you never mix them up.</span></li>
+    <li><b>Logins stay in their workspace</b><span>Signing out of a workspace deletes its logins and data from this computer.</span></li>
+    <li><b>Pause a workspace</b><span>Paused workspaces don't run in the background, to save memory.</span></li>
+    <li><b>Work hours</b><span>Outside a workspace's hours, its notifications stay quiet.</span></li>
+  </ul>
+</article>
+<article class="fgroup" id="services">
+  <h3>Your apps, untouched</h3>
+  <p class="tagline">The real websites, plus any site you add.</p>
+  <ul>
+    <li><b>Facebook, Messenger, WhatsApp, Instagram, LinkedIn and Google apps</b><span>Gmail, Calendar, Drive, Meet and Chat included. Each runs its real web app.</span></li>
+    <li><b>Any website</b><span>Paste an address to add any site, as many as you like, and give it an icon and color from the built-in icon pack.</span></li>
+    <li><b>Add several at once</b> <kbd>⌘N</kbd><span>Pick every service you want and add them in one go.</span></li>
+    <li><b>One Google sign-in for every Google app</b><span>Sign in once and Gmail, Calendar, Drive, Meet and Chat are all signed in, as that workspace's own account.</span></li>
+    <li><b>Sign in with your browser</b> <span class="chip">macOS</span><span>Already logged in to these sites in Arc, Chrome, Brave, Edge, Vivaldi, Opera or Chromium? Copy those logins instead of typing passwords. If a copied login expires, Extrovert copies it again by itself.</span></li>
+    <li><b>Per-service settings</b><span>Mute, badge, sound, zoom and video autoplay for each service. Right-click a service for more.</span></li>
+  </ul>
+</article>
+<article class="fgroup" id="attention">
+  <h3>Never miss what matters</h3>
+  <p class="tagline">Live badges and real notifications, minus the noise.</p>
+  <ul>
+    <li><b>Live unread badges</b><span>On every service, every account, and the dock or tray.</span></li>
+    <li><b>Notifications with previews</b> <kbd>⌘⇧N</kbd><span>Each service's own notifications, shown natively, with a full history.</span></li>
+    <li><b>Next unread</b> <kbd>⌘J</kbd><span>Jump to the next service with something new, across all accounts, until you reach inbox zero.</span></li>
+    <li><b>People view</b><span>See who is waiting on you, grouped by person across platforms.</span></li>
+    <li><b>VIPs</b><span>Messages from your VIPs break through Do Not Disturb and digests.</span></li>
+    <li><b>Do Not Disturb and digest</b><span>Silence everything, or get one summary every hour instead of constant pings.</span></li>
+    <li><b>Snooze to the exact chat</b><span>A snoozed notification reopens that exact conversation when it comes back.</span></li>
+    <li><b>While-you-were-away recap</b><span>Back from a break? One card shows who wrote to you, and where.</span></li>
+    <li><b>Login watchdog</b><span>If a service signs you out, you're told right away instead of silently missing messages.</span></li>
+  </ul>
+</article>
+<article class="fgroup" id="flow">
+  <h3>Stay in flow</h3>
+  <p class="tagline">Get anywhere in a keystroke.</p>
+  <ul>
+    <li><b>Command palette</b> <kbd>⌘K</kbd><span>Jump to any service, pin or action. Paste a link and it opens in the right app.</span></li>
+    <li><b>Smart links</b><span>An Instagram link sent on WhatsApp opens in your Instagram, not a browser.</span></li>
+    <li><b>Peek</b> <kbd>⌥ + hover</kbd><span>See a live snapshot of another service without switching.</span></li>
+    <li><b>Pins</b><span>Save any page inside a service, a group, a profile, a chat, and get back in one click.</span></li>
+    <li><b>Saved replies</b> <kbd>⌘⇧V</kbd><span>Paste text you type often into any chat.</span></li>
+    <li><b>Find, back and forward</b> <kbd>⌘F</kbd><span>Browser basics that work in every service.</span></li>
+    <li><b>Zen mode</b> <kbd>⌘\</kbd><span>Hide the sidebar so the service fills the window.</span></li>
+    <li><b>Downloads</b><span>Everything you downloaded from any service, in one list.</span></li>
+    <li><b>Menu bar mini view</b><span>Unread counts and the latest notifications, without opening the window.</span></li>
+  </ul>
+</article>
+<article class="fgroup" id="privacy">
+  <h3>Calls &amp; privacy</h3>
+  <p class="tagline">Your screen, your rules.</p>
+  <ul>
+    <li><b>Camera, mic and screen indicators</b><span>A live dot shows which service is using your camera, microphone or screen.</span></li>
+    <li><b>Call bubble</b><span>Switch away during a call and it keeps going in a small floating window.</span></li>
+    <li><b>Screen-share shield</b><span>While you share your screen, previews and other accounts are hidden automatically.</span></li>
+    <li><b>Lock &amp; blur</b> <kbd>⌘⇧L</kbd><span>Blur and lock the whole app instantly, with a PIN or Touch ID. Optionally when you step away.</span></li>
+    <li><b>Permissions dashboard</b><span>See and revoke camera, microphone, screen, notification and location access per service.</span></li>
+    <li><b>Per-workspace proxy</b><span>Route only one workspace through a proxy, such as your office network.</span></li>
+    <li><b>No tracking</b><span>No analytics, no account with us, no server. Everything stays on your computer.</span></li>
+  </ul>
+</article>
+<article class="fgroup" id="wellbeing">
+  <h3>Social media on your terms</h3>
+  <p class="tagline">See where your time goes. Set your own limits.</p>
+  <ul>
+    <li><b>Time insights</b><span>Private time per service and account, today and this week. Only counts while you actually use it.</span></li>
+    <li><b>Feed guard</b><span>Daily budgets for feeds, with a gentle &quot;still want to scroll?&quot; Messaging is never limited.</span></li>
+    <li><b>No autoplay in feeds</b><span>Videos in Facebook, Instagram and LinkedIn feeds wait for you to press play.</span></li>
+  </ul>
+</article>
+<article class="fgroup" id="performance">
+  <h3>Fast and dependable</h3>
+  <p class="tagline">Opens fast, recovers by itself.</p>
+  <ul>
+    <li><b>Staggered startup</b><span>Your last service opens first; the rest load quietly, messaging apps first.</span></li>
+    <li><b>Auto-recover</b><span>After sleep or a Wi-Fi change, stuck services reload by themselves.</span></li>
+    <li><b>Smart sleep</b><span>When memory runs low, idle feeds sleep first. Messaging apps stay awake.</span></li>
+    <li><b>Task manager</b><span>Memory and CPU per service, with reload and sleep buttons.</span></li>
+  </ul>
+</article>
+<article class="fgroup" id="switching">
+  <h3>Easy to switch, easy to trust</h3>
+  <p class="tagline">Free, open source, yours to keep.</p>
+  <ul>
+    <li><b>Import from Ferdium</b><span>Bring your Ferdium services over in one step.</span></li>
+    <li><b>Export and import your setup</b><span>Move your workspaces and settings to another computer as a file.</span></li>
+    <li><b>Updates from GitHub</b><span>New versions install themselves from GitHub Releases. Beta channel available.</span></li>
+    <li><b>Report a problem</b><span>Fills in a GitHub bug report for you, with app and system details but no personal data. You submit it on GitHub with a free account.</span></li>
+  </ul>
+</article>
+<!-- /guide:features -->
+    </div>
+  </div>
+</section>
+
+<section id="compare" class="alt">
+  <div class="wrap">
+    <span class="eyebrow">Compare</span>
+    <h2>Extrovert, Ferdium and Rambox.</h2>
+    <p class="sub">Ferdium and Rambox are the best-known apps of this kind, and both are good. Here is where Extrovert is different.</p>
+    <div class="tbl">
+      <table>
+        <thead><tr><th></th><th class="us">Extrovert</th><th>Ferdium</th><th>Rambox</th></tr></thead>
+        <tbody>
+          <tr><th>Price</th><td class="us y">Free</td><td>Free, open source</td><td>Free Basic plan, Pro about $7/month</td></tr>
+          <tr><th>Workspaces</th><td class="us y">One per Google account, fully isolated</td><td>Groups of services</td><td>Pro only</td></tr>
+          <tr><th>Several accounts of one app</th><td class="us y">Yes</td><td>Yes</td><td>Pro only</td></tr>
+          <tr><th>Custom websites</th><td class="us y">Unlimited</td><td>Yes</td><td>2 on Basic, unlimited on Pro</td></tr>
+          <tr><th>Unread count per account, without switching</th><td class="us y">Yes</td><td class="n">—</td><td class="n">—</td></tr>
+          <tr><th>Notification previews</th><td class="us y">Yes</td><td>Users report badge-only notifications</td><td>Yes</td></tr>
+          <tr><th>Notification history across apps</th><td class="us y">Yes</td><td class="n">—</td><td class="n">—</td></tr>
+          <tr><th>Warns when you get signed out</th><td class="us y">Yes</td><td class="n">—</td><td class="n">—</td></tr>
+          <tr><th>Find in page, back and forward</th><td class="us y">Yes</td><td>Yes</td><td>Users report missing</td></tr>
+          <tr><th>Camera, mic and screen sharing for calls</th><td class="us y">Yes, with indicators and a call bubble</td><td>Yes</td><td>Users report WhatsApp video calls failing</td></tr>
+          <tr><th>Device limit</th><td class="us y">None</td><td>None</td><td>1 device on Basic, 3 on Pro</td></tr>
+          <tr><th>Platforms</th><td class="us">macOS, Windows, Linux</td><td>macOS, Windows, Linux</td><td>macOS, Windows, Linux</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">Competitor details come from public pricing pages and user reviews, last checked October 2026. Products change; see <a href="https://github.com/Pantho-Haque/Extrovert/blob/main/COMPETITIVE_ANALYSIS.md">the full comparison and sources</a>. What nobody can beat yet, Extrovert included: every service is a full web page, so each one uses memory. Extrovert puts idle feeds to sleep and lets you pause whole workspaces to keep it down.</p>
+  </div>
+</section>
+
+<section id="privacy">
+  <div class="wrap">
+    <span class="eyebrow">Privacy</span>
+    <h2>Your logins never leave your computer.</h2>
+    <p class="sub">Extrovert has no server and no analytics. It only talks to the sites you add, to Google to sign you in, and to GitHub to check for updates.</p>
+    <div class="two">
+      <div class="hl"><svg class="i"><use href="#i-users"/></svg><b>Google shares only your name, email and photo</b><p>Used to create your workspace. Extrovert never sees your password and keeps no Google tokens.</p></div>
+      <div class="hl"><svg class="i"><use href="#i-shield"/></svg><b>Logins belong to their workspace</b><p>Sign out of a workspace, and every login and bit of data in it is deleted from your computer.</p></div>
+      <div class="hl"><svg class="i"><use href="#i-globe"/></svg><b>Sign in with your browser, safely</b><p>On macOS, copy the logins you already have in Arc, Chrome and others. It runs only when you click Import, and macOS asks you first.</p></div>
+      <div class="hl"><svg class="i"><use href="#i-zap"/></svg><b>Open source</b><p>Every line is public on GitHub, so anyone can check exactly what Extrovert does.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="alt">
+  <div class="wrap">
+    <span class="eyebrow">Keyboard first</span>
+    <h2>Everything is a keystroke away.</h2>
+    <p class="sub">On Windows and Linux, use Ctrl instead of ⌘, Shift instead of ⇧ and Alt instead of ⌥.</p>
+    <div class="keys">
+<!-- guide:shortcuts -->
+<div><kbd>⌘K</kbd><span>Command palette: jump anywhere, or paste a link</span></div>
+<div><kbd>⌘J</kbd><span>Next unread, across all accounts</span></div>
+<div><kbd>⌘1–9</kbd><span>Switch service</span></div>
+<div><kbd>⌘⇧1–9</kbd><span>Switch account</span></div>
+<div><kbd>⌥ + hover</kbd><span>Peek at a service without switching</span></div>
+<div><kbd>⌘⇧N</kbd><span>Notifications</span></div>
+<div><kbd>⌘[</kbd><span>Back</span></div>
+<div><kbd>⌘]</kbd><span>Forward</span></div>
+<div><kbd>⌘R</kbd><span>Reload service</span></div>
+<div><kbd>⌘F</kbd><span>Find in page</span></div>
+<div><kbd>⌘⇧V</kbd><span>Saved replies</span></div>
+<div><kbd>⌘=</kbd><span>Zoom in</span></div>
+<div><kbd>⌘-</kbd><span>Zoom out</span></div>
+<div><kbd>⌘0</kbd><span>Actual size</span></div>
+<div><kbd>⌘N</kbd><span>Add services</span></div>
+<div><kbd>⌘⇧L</kbd><span>Lock &amp; blur instantly</span></div>
+<div><kbd>⌘\</kbd><span>Zen mode (hide the sidebar)</span></div>
+<div><kbd>⌘/</kbd><span>Shortcuts &amp; features</span></div>
+<div><kbd>⌘,</kbd><span>Settings</span></div>
+<div><kbd>⌥⌘I</kbd><span>Developer tools for the service</span></div>
+<!-- /guide:shortcuts -->
+    </div>
+  </div>
+</section>
+
+<section id="install">
+  <div class="wrap">
+    <span class="eyebrow">Install</span>
+    <h2>Up and running in two minutes.</h2>
+    <p class="sub">Download from <a href="https://github.com/Pantho-Haque/Extrovert/releases/latest">GitHub Releases</a>. Extrovert isn't signed with a paid Apple or Microsoft certificate yet, so your system asks once.</p>
+    <div class="steps">
+      <div class="step"><h3><svg class="b"><use href="#b-apple"/></svg> macOS</h3><p>Open the <code>.dmg</code> and drag Extrovert to Applications. If macOS says it can't check the app, open <b>System Settings → Privacy &amp; Security</b> and click <b>Open Anyway</b>.</p></div>
+      <div class="step"><h3><svg class="b"><use href="#b-windows"/></svg> Windows</h3><p>Run the <code>Setup.exe</code>. If you see "Windows protected your PC", click <b>More info → Run anyway</b>.</p></div>
+      <div class="step"><h3><svg class="b"><use href="#b-linux"/></svg> Linux</h3><p>Make the <code>.AppImage</code> runnable with <code>chmod +x</code>, then open it. It updates itself.</p></div>
+    </div>
+    <p class="note">Then sign in with Google, pick your apps, and log in to each one, or bring over the logins from your browser. A short tour shows you around.</p>
+  </div>
+</section>
+
+<section id="faq" class="alt">
+  <div class="wrap">
+    <span class="eyebrow">FAQ</span>
+    <h2>Questions.</h2>
+    <details><summary>Is it really free?</summary><p>Yes. Every feature, unlimited accounts, unlimited websites, any number of computers. Extrovert is open source under the MIT license, with no paid plan.</p></details>
+    <details><summary>Does Extrovert change the sites or read my messages?</summary><p>No. It shows each site exactly as it is and never changes or automates its pages. It only uses what any browser knows: page titles (for unread counts), the sites' own notifications, and which page you're on.</p></details>
+    <details><summary>Why do I sign in with Google?</summary><p>Each Google account becomes its own workspace, with its own logins. Google shares only your name, email and photo. Your Google apps (Gmail, Calendar, Drive, Meet, Chat) then open as that account.</p></details>
+    <details><summary>Can I use two accounts of the same app?</summary><p>Yes. Add WhatsApp twice, or three Gmails. They're grouped together in the sidebar and tagged so you can tell them apart, and each keeps its own login.</p></details>
+    <details><summary>Is "Sign in with your browser" safe?</summary><p>It reads the logins of only the services you pick, from the browser and profile you pick, and only after macOS asks for your permission. Nothing is sent anywhere. If a copied login expires, Extrovert copies it again from the same browser; logging out of the service stops that. It works on macOS with Arc, Chrome, Brave, Edge, Vivaldi, Opera and Chromium.</p></details>
+    <details><summary>Will I miss notifications?</summary><p>Not if you keep Extrovert running: every service stays live in the background, with badges and native notifications. If a service signs you out, Extrovert tells you right away instead of quietly showing zero.</p></details>
+    <details><summary>How much memory does it use?</summary><p>Each service is a full web page, like a browser tab. Extrovert loads them one at a time, puts idle feeds to sleep when memory runs low, and lets you pause whole workspaces. The task manager shows what each service uses.</p></details>
+    <details><summary>How do updates work without a server?</summary><p>New versions are published on GitHub Releases. Extrovert checks there at startup and every 6 hours and tells you when one is ready. The check sends no personal data.</p></details>
+  </div>
+</section>
+
+<section class="final">
+  <div class="wrap">
+    <h2>All your communities. One space.</h2>
+    <p class="sub" style="margin: 0 auto 28px">Free and open source, for macOS, Windows and Linux.</p>
+    <div class="cta">
+      <a class="btn primary" href="https://github.com/Pantho-Haque/Extrovert/releases/latest">Download Extrovert</a>
+      <a class="btn" href="https://github.com/Pantho-Haque/Extrovert"><svg class="b"><use href="#b-github"/></svg> Star on GitHub</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <span>© 2026 Pantho Haque · MIT license</span>
+    <div class="links">
+      <a href="https://github.com/Pantho-Haque/Extrovert">Source</a>
+      <a href="https://github.com/Pantho-Haque/Extrovert/releases">Releases</a>
+      <a href="https://github.com/Pantho-Haque/Extrovert/issues/new?template=bug_report.yml">Report a problem</a>
+      <a href="https://github.com/Pantho-Haque/Extrovert/blob/main/COMPETITIVE_ANALYSIS.md">Full comparison</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // Name the visitor's system on the download button. Every system downloads from the same release page.
+  const ua = navigator.userAgent;
+  const os = /Mac/.test(ua) ? ['macOS', 'apple'] : /Win/.test(ua) ? ['Windows', 'windows'] : /Linux|X11/.test(ua) ? ['Linux', 'linux'] : null;
+  if (os) {
+    document.getElementById('os-label').textContent = `Download for ${os[0]}`;
+    document.getElementById('os-icon').setAttribute('href', `#b-${os[1]}`);
+  } else document.getElementById('os-icon').parentElement.remove();
+</script>
+</body>
+</html>

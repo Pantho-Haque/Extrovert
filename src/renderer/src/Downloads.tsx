@@ -24,7 +24,7 @@ export function Downloads({ snap, onClose }: { snap: AppSnapshot; onClose: () =>
                 <Icon name="file" size={22} />
                 <div>
                   <b>{d.name}</b>
-                  <small>{status} · {loc && <><ServiceIcon type={loc.inst.type} name={instanceName(loc.inst)} status={snap.statuses[loc.inst.id]} size={12} /> {instanceName(loc.inst)} · {loc.ws.name} ·</>} {timeAgo(d.at)}</small>
+                  <small>{status} · {loc && <><ServiceIcon type={loc.inst.type} look={loc.inst} name={instanceName(loc.inst)} status={snap.statuses[loc.inst.id]} size={12} /> {instanceName(loc.inst)} · {loc.ws.name} ·</>} {timeAgo(d.at)}</small>
                 </div>
                 {d.state === 'completed' && (
                   <>

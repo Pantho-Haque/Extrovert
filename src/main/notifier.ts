@@ -21,7 +21,7 @@ export class Notifier {
       const instanceId = app.views.instanceFor(e.sender);
       if (instanceId) this.incoming(instanceId, payload);
     });
-    setInterval(() => this.tick(), 15_000);
+    app.every(15_000, () => this.tick());
   }
 
   incoming(instanceId: string, page: { id: string; title: string; body: string }): void {

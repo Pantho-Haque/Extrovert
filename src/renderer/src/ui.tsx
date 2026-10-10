@@ -6,7 +6,9 @@ import {
   IconBrandFacebook, IconBrandGmail, IconBrandGoogleDrive, IconBrandInstagram, IconBrandLinkedin, IconBrandMessenger, IconBrandWhatsapp,
   IconCalendarEvent, IconMessages, IconVideo, IconWorld, type Icon as TablerIcon,
 } from '@tabler/icons-react';
+import type { Look } from '../../core/services/look';
 import { Icon } from './icons';
+import { packIcon } from './icon-pack';
 
 export function Brand({ size = 28 }: { size?: number }) {
   return (
@@ -29,11 +31,14 @@ const BRAND_ICONS: Record<Exclude<ServiceType, 'custom'>, TablerIcon> = {
  * A service's icon: an outline brand icon on a tile tinted with the brand color. Instant and offline.
  * Custom websites use their own site icon once loaded, otherwise a globe.
  */
-export function ServiceIcon({ type, status, size = 34 }: { type: ServiceType; status?: InstanceStatus | undefined; size?: number; name?: string }) {
-  if (type === 'custom' && status?.icon) return <img className="site-icon" src={status.icon} width={size} height={size} alt="" draggable={false} />;
-  const Glyph = type === 'custom' ? IconWorld : BRAND_ICONS[type];
+export function ServiceIcon({ type, status, size = 34, look }: { type: ServiceType; status?: InstanceStatus | undefined; size?: number; name?: string; look?: Look | undefined }) {
+  // A website you added can have an icon from the pack and a color of your choice (Settings → Services).
+  const picked = type === 'custom' ? packIcon(look?.icon) : undefined;
+  if (type === 'custom' && !picked && status?.icon) return <img className="site-icon" src={status.icon} width={size} height={size} alt="" draggable={false} />;
+  const Glyph = picked ?? (type === 'custom' ? IconWorld : BRAND_ICONS[type]);
+  const color = type === 'custom' ? (look?.color ?? serviceDef(type).color) : serviceDef(type).color;
   return (
-    <span className="svc-tile" style={{ width: size, height: size, ['--brand' as string]: serviceDef(type).color }}>
+    <span className="svc-tile" style={{ width: size, height: size, ['--brand' as string]: color }}>
       <Glyph size={Math.round(size * 0.6)} stroke={1.75} aria-hidden="true" />
     </span>
   );

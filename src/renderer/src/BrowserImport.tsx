@@ -78,7 +78,7 @@ export function BrowserImport({ snap, ws, onClose }: { snap: AppSnapshot; ws: Wo
                     if (next.has(inst.id)) next.delete(inst.id); else next.add(inst.id);
                     setSelected(next);
                   }} />
-                  <ServiceIcon type={inst.type} name={instanceName(inst)} status={snap.statuses[inst.id]} size={22} />
+                  <ServiceIcon type={inst.type} look={inst} name={instanceName(inst)} status={snap.statuses[inst.id]} size={22} />
                   <span>{instanceName(inst)}</span>
                   {qr && <small>Needs a one-time QR scan with your phone</small>}
                   {r && (r.error ? <small className="bad">{r.error}</small> : <small className="good">✓ Signed in</small>)}
@@ -86,7 +86,7 @@ export function BrowserImport({ snap, ws, onClose }: { snap: AppSnapshot; ws: Wo
               );
             })}
           </div>
-          <div className="note"><p>When you click Import, macOS asks to allow access to “{browser.name} Safe Storage”. Click <b>Allow</b>: it's the key {browser.name} uses to protect its saved logins. Extrovert uses it once and doesn't keep it.</p></div>
+          <div className="note"><p>When you click Import, macOS asks to allow access to “{browser.name} Safe Storage”. Click <b>Always Allow</b>: it's the key {browser.name} uses to protect its saved logins. Extrovert never saves it. When a copied login expires, Extrovert copies it again from {browser.name} by itself; "Always Allow" lets that happen without asking.</p></div>
           {error && <p className="err">{error}</p>}
           <div className="modal-f">
             <button className="btn" onClick={onClose}>{results ? 'Done' : 'Cancel'}</button>

@@ -15,6 +15,10 @@ describe('newInstance', () => {
     expect(instanceName(second)).toBe('WhatsApp 2');
   });
 
+  it('keeps the icon and color picked for a website', () => {
+    expect(newInstance('custom', [], 'a', { url: 'https://web.telegram.org/', icon: 'brand-telegram', color: '#0EA5E9' })).toMatchObject({ icon: 'brand-telegram', color: '#0EA5E9' });
+  });
+
   it('turns autoplay off for feeds only', () => {
     expect(newInstance('facebook', [], 'a').autoplay).toBe(false);
     expect(newInstance('whatsapp', [], 'a').autoplay).toBe(true);

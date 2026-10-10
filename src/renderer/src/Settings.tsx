@@ -1,11 +1,13 @@
 /** Settings (FR-P01) with every section from the prototype, wired to real settings and actions. */
-import { useState, type ReactNode } from 'react';
+import { Fragment, useState, type ReactNode } from 'react';
+import { formatKeys, keyOf, SHORTCUTS } from '../../core/guide/registry';
 import { serviceDef } from '../../core/services/catalog';
 import { instanceName, WORKSPACE_COLORS } from '../../core/workspaces/model';
 import type { ActionPayload, AppSnapshot } from '../../shared/ipc';
 import type { DevicePermission, Instance, Settings as SettingsT, Workspace } from '../../shared/types';
 import { Icon, type IconName } from './icons';
-import { act, isMac, mod, timeAgo } from './lib';
+import { LookPicker } from './LookPicker';
+import { act, isMac, timeAgo } from './lib';
 import type { Overlay } from './Shell';
 import { Avatar, Brand, Modal, Row, ServiceIcon, Switch } from './ui';
 
@@ -76,7 +78,7 @@ const BODIES: Record<SectionId, (c: Ctx) => ReactNode> = {
         <h5>VIP people</h5>
         <p className="muted">Messages from these people get through Do Not Disturb, digests and work hours on every platform, with a distinct sound. Tip: star someone in the notification center.</p>
         <ChipList items={s.vips} placeholder="+ Add a name" onChange={(vips) => set({ vips })} />
-        <h5>Saved replies <kbd>{mod}⇧V</kbd></h5>
+        <h5>Saved replies <kbd>{keyOf('replies', isMac)}</kbd></h5>
         <Replies replies={s.replies} onChange={(replies) => set({ replies })} />
       </>
     );
@@ -114,18 +116,16 @@ const BODIES: Record<SectionId, (c: Ctx) => ReactNode> = {
         <div className="seg inline">{(['light', 'dark', 'system'] as const).map((t) => <button key={t} className={snap.settings.theme === t ? 'on' : ''} onClick={() => set({ theme: t })}>{t[0]!.toUpperCase() + t.slice(1)}</button>)}</div>
       </Row>
       <Row title="Language" desc="Extrovert is translation-ready; more languages are coming."><select value="en" onChange={() => undefined}><option value="en">English</option></select></Row>
-      <Row title="Zen mode" desc="Hide the sidebar so the service fills the window."><kbd>{mod}\</kbd></Row>
+      <Row title="Zen mode" desc="Hide the sidebar so the service fills the window."><kbd>{keyOf('zen', isMac)}</kbd></Row>
       <Row title="Launch at login"><Switch label="Launch at login" checked={snap.settings.launchAtLogin} onChange={(v) => set({ launchAtLogin: v })} /></Row>
     </>
   ),
 
-  shortcuts: () => (
-    <div className="keys">
-      {[[`${mod}K`, 'Command palette / open a link'], [`${mod}J`, 'Next unread (all accounts)'], [`${mod}1–9`, 'Switch service'], [isMac ? '⌘⇧1–9' : 'Ctrl+Shift+1–9', 'Switch account'],
-        [`${mod}F`, 'Find in page'], [`${mod}R`, 'Reload service'], [`${mod}[  ${mod}]`, 'Back / forward'], [`${mod}\\`, 'Zen mode'], [`${mod}⇧V`, 'Saved replies'],
-        [`${mod}⇧L`, 'Lock & blur'], [`${mod}⇧N`, 'Notifications'], [`${mod}N`, 'Add a service'], [isMac ? '⌥ + hover' : 'Alt + hover', 'Peek'], [`${mod}+  ${mod}−  ${mod}0`, 'Zoom'], [`${mod},`, 'Settings']]
-        .map(([k, t]) => <div key={k}><kbd>{k}</kbd><span>{t}</span></div>)}
-    </div>
+  shortcuts: ({ onOpen }) => (
+    <>
+      <div className="keys">{SHORTCUTS.map((k) => <div key={k.id}><kbd>{formatKeys(k.keys, isMac)}</kbd><span>{k.label}</span></div>)}</div>
+      <p style={{ marginTop: 14 }}><button className="btn" onClick={() => onOpen({ kind: 'guide' })}><Icon name="command" size={15} /> All shortcuts & features</button></p>
+    </>
   ),
 
   updates: ({ snap, set, onOpen }) => (
@@ -139,8 +139,8 @@ const BODIES: Record<SectionId, (c: Ctx) => ReactNode> = {
       <Row title="Check automatically" desc="At startup and every 6 hours."><Switch label="Auto update" checked={snap.settings.updates.autoCheck} onChange={(v) => set({ updates: { ...snap.settings.updates, autoCheck: v } })} /></Row>
       <div className="note"><Icon name="shield" size={16} /><p>Updates come straight from GitHub Releases. The check sends no personal data.</p></div>
       <p style={{ marginTop: 14, display: 'flex', gap: 8 }}>
-        <button className="btn" onClick={() => act('openExternal', { url: 'https://github.com/Pantho-Haque/extrovert/releases' })}>Release notes</button>
-        <button className="btn" onClick={() => onOpen({ kind: 'feedback' })}>Send feedback</button>
+        <button className="btn" onClick={() => act('openExternal', { url: 'https://github.com/Pantho-Haque/Extrovert/releases' })}>Release notes</button>
+        <button className="btn" onClick={() => onOpen({ kind: 'feedback' })}>Report a problem</button>
       </p>
     </>
   ),
@@ -210,6 +210,7 @@ function ProxyRow({ w }: { w: Workspace }) {
 
 function ServicesSection({ snap }: { snap: AppSnapshot }) {
   const [wsId, setWsId] = useState(snap.activeWorkspaceId ?? snap.workspaces[0]?.id ?? '');
+  const [styling, setStyling] = useState<string | null>(null);
   const ws = snap.workspaces.find((w) => w.id === wsId);
   if (!ws) return <p className="empty">No workspaces yet.</p>;
   const set = (inst: Instance, patch: ActionPayload<'updateInstance'>['patch']) => act('updateInstance', { workspaceId: ws.id, instanceId: inst.id, patch });
@@ -223,9 +224,11 @@ function ServicesSection({ snap }: { snap: AppSnapshot }) {
         <tbody>
           {ws.instances.map((inst) => {
             const st = snap.statuses[inst.id];
+            const icon = <ServiceIcon type={inst.type} look={inst} name={instanceName(inst)} status={st} size={24} />;
             return (
-              <tr key={inst.id}>
-                <td className="svc-cell"><ServiceIcon type={inst.type} name={instanceName(inst)} status={st} size={24} /><div><NameField inst={inst} onSave={(label) => set(inst, { label })} /><small>{inst.url ? new URL(inst.url).host : new URL(serviceDef(inst.type).url).host}</small></div></td>
+              <Fragment key={inst.id}>
+              <tr>
+                <td className="svc-cell">{inst.type === 'custom' ? <button className="look-btn" title="Change icon & color" aria-expanded={styling === inst.id} onClick={() => setStyling(styling === inst.id ? null : inst.id)}>{icon}</button> : icon}<div><NameField inst={inst} onSave={(label) => set(inst, { label })} /><small>{inst.url ? new URL(inst.url).host : new URL(serviceDef(inst.type).url).host}</small></div></td>
                 <td><Health inst={inst} state={st?.state} /></td>
                 <td><Switch label="Enabled" checked={inst.enabled} onChange={(v) => set(inst, { enabled: v })} /></td>
                 <td><Switch label="Badge" checked={inst.badge} onChange={(v) => set(inst, { badge: v })} /></td>
@@ -234,6 +237,13 @@ function ServicesSection({ snap }: { snap: AppSnapshot }) {
                 <td>{serviceDef(inst.type).kind === 'feed' ? <Switch label="Autoplay videos" checked={inst.autoplay} onChange={(v) => set(inst, { autoplay: v })} /> : <small className="muted">–</small>}</td>
                 <td><button className="icon-btn" title="More (zoom, pin, log out, remove)" onClick={() => act('instanceMenu', { workspaceId: ws.id, instanceId: inst.id })}><Icon name="more" size={16} /></button></td>
               </tr>
+              {styling === inst.id && (
+                <tr className="look-row"><td colSpan={8}>
+                  {/* An empty value clears the field: back to the site's own icon. */}
+                  <LookPicker look={inst} url={inst.url} siteIcon={st?.icon} onChange={(l) => set(inst, { icon: l.icon ?? '', color: l.color ?? '' })} />
+                </td></tr>
+              )}
+              </Fragment>
             );
           })}
         </tbody>
@@ -283,7 +293,7 @@ function PrivacySection({ snap, set }: { snap: AppSnapshot; set: Ctx['set'] }) {
           </>
         )}
       </Row>
-      <Row title="Panic key" desc="Instantly blur, mute and lock."><kbd>{mod}⇧L</kbd></Row>
+      <Row title="Panic key" desc="Instantly blur, mute and lock."><kbd>{keyOf('lock', isMac)}</kbd></Row>
       <Row title="Blur when idle" desc="Lock the window after 5 minutes without activity."><Switch label="Blur when idle" checked={snap.settings.blurOnIdle} onChange={(v) => set({ blurOnIdle: v })} /></Row>
       <Row title="Screen-share shield" desc="While you share your screen, hide notification previews and your other accounts."><Switch label="Screen-share shield" checked={snap.settings.shareShield} onChange={(v) => set({ shareShield: v })} /></Row>
       <Row title={<>Tracker blocking <span className="tag">Coming later</span></>} desc="Block third-party trackers per workspace (can't remove sponsored posts)."><Switch label="Tracker blocking" checked={false} onChange={() => undefined} /></Row>
@@ -294,7 +304,7 @@ function PrivacySection({ snap, set }: { snap: AppSnapshot; set: Ctx['set'] }) {
         <tbody>
           {snap.workspaces.flatMap((ws) => ws.instances.map((inst) => (
             <tr key={inst.id}>
-              <td className="svc-cell"><ServiceIcon type={inst.type} name={instanceName(inst)} status={snap.statuses[inst.id]} size={20} />{instanceName(inst)} <small>{ws.name}</small></td>
+              <td className="svc-cell"><ServiceIcon type={inst.type} look={inst} name={instanceName(inst)} status={snap.statuses[inst.id]} size={20} />{instanceName(inst)} <small>{ws.name}</small></td>
               {(['camera', 'microphone', 'location'] as const).map((p) => {
                 const v = inst.permissions[p];
                 return <td key={p}><button className={`perm-p ${v === true ? 'on' : v === false ? 'off' : ''}`} onClick={() => cycle(inst, ws, p)}>{v === true ? 'Allowed' : v === false ? 'Blocked' : 'Ask'}</button></td>;

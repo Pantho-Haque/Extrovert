@@ -4,6 +4,7 @@ import { AccountMenu } from './AccountMenu';
 import { AddService } from './AddService';
 import { BrowserImport } from './BrowserImport';
 import { Downloads } from './Downloads';
+import { Guide, Tour } from './Guide';
 import { Insights, TaskManager } from './Insights';
 import { instanceName } from '../../core/workspaces/model';
 import { act, api, isMac } from './lib';
@@ -11,7 +12,8 @@ import { MainArea, pageVisible } from './MainArea';
 import { NotificationCenter } from './NotificationCenter';
 import { Onboarding } from './Onboarding';
 import { Palette } from './Palette';
-import { FeedGuard, Feedback, LockScreen, PermissionPrompt, Recap, ScreenPicker, SigningIn, WhatsNew } from './RuntimeOverlays';
+import { ReportProblem } from './ReportProblem';
+import { FeedGuard, LockScreen, PermissionPrompt, Recap, ScreenPicker, SigningIn, WhatsNew } from './RuntimeOverlays';
 import { Settings, type SectionId } from './Settings';
 import { Sidebar } from './Sidebar';
 
@@ -25,7 +27,9 @@ export type Overlay =
   | { kind: 'taskManager' }
   | { kind: 'downloads' }
   | { kind: 'browserImport' }
-  | { kind: 'feedback' };
+  | { kind: 'feedback' }
+  | { kind: 'guide' }
+  | { kind: 'tour' };
 
 export function Shell({ snap }: { snap: AppSnapshot }) {
   const [overlay, setOverlay] = useState<Overlay | null>(null);
@@ -43,11 +47,18 @@ export function Shell({ snap }: { snap: AppSnapshot }) {
           palette: { kind: 'palette', mode: 'commands' }, replies: { kind: 'palette', mode: 'replies' }, settings: { kind: 'settings' },
           notifications: { kind: 'notifications' }, accountMenu: { kind: 'account' }, addService: { kind: 'addService' },
           insights: { kind: 'insights' }, taskManager: { kind: 'taskManager' }, browserImport: { kind: 'browserImport' },
+          guide: { kind: 'guide' }, tour: { kind: 'tour' }, feedback: { kind: 'feedback' },
         };
         if (map[cmd]) setOverlay(map[cmd]);
       }),
     [],
   );
+
+  // First time in the app (right after onboarding): a quick tour of every feature.
+  const tourDue = !snap.settings.tourDone && !!ws && !needsOnboarding;
+  useEffect(() => {
+    if (tourDue) setOverlay((o) => o ?? { kind: 'tour' });
+  }, [tourDue]);
 
   useEffect(() => {
     const on = () => act('setOnline', { online: true });
@@ -94,7 +105,9 @@ export function Shell({ snap }: { snap: AppSnapshot }) {
       {overlay?.kind === 'taskManager' && <TaskManager snap={snap} onClose={close} />}
       {overlay?.kind === 'downloads' && <Downloads snap={snap} onClose={close} />}
       {overlay?.kind === 'browserImport' && ws && <BrowserImport snap={snap} ws={ws} onClose={close} />}
-      {overlay?.kind === 'feedback' && <Feedback snap={snap} onClose={close} />}
+      {overlay?.kind === 'feedback' && <ReportProblem snap={snap} onClose={close} />}
+      {overlay?.kind === 'guide' && <Guide onClose={close} onTour={() => setOverlay({ kind: 'tour' })} onReport={() => setOverlay({ kind: 'feedback' })} />}
+      {overlay?.kind === 'tour' && <Tour onClose={close} />}
 
       {rt.recap && <Recap snap={snap} />}
       {rt.whatsNew && !rt.recap && <WhatsNew snap={snap} onFeedback={() => setOverlay({ kind: 'feedback' })} />}

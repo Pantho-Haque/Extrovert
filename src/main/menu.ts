@@ -3,6 +3,7 @@
  * service page has focus. The Edit roles are what make copy/paste work inside services on macOS.
  */
 import { Menu, type MenuItemConstructorOptions } from 'electron';
+import { accel } from '../core/guide/registry';
 import { instanceName, orderedInstances } from '../core/workspaces/model';
 import type { Extrovert } from './app';
 
@@ -23,7 +24,7 @@ export function buildMenu(app: Extrovert): void {
           submenu: [
             { role: 'about' },
             { type: 'separator' },
-            { label: 'Settings…', accelerator: 'CmdOrCtrl+,', click: () => app.command('settings') },
+            { label: 'Settings…', accelerator: accel('settings'), click: () => app.command('settings') },
             { type: 'separator' },
             { role: 'hide' }, { role: 'hideOthers' }, { role: 'unhide' },
             { type: 'separator' },
@@ -34,11 +35,11 @@ export function buildMenu(app: Extrovert): void {
     {
       label: 'File',
       submenu: [
-        { label: 'Add Service…', accelerator: 'CmdOrCtrl+N', click: () => app.command('addService') },
+        { label: 'Add Service…', accelerator: accel('addService'), click: () => app.command('addService') },
         { label: 'Add Google Account…', click: () => void app.signIn() },
         { type: 'separator' },
-        { label: 'Lock Extrovert', accelerator: 'CmdOrCtrl+Shift+L', click: () => void app.lock() },
-        ...(process.platform !== 'darwin' ? [{ type: 'separator' } as const, { label: 'Settings…', accelerator: 'Ctrl+,', click: () => app.command('settings') }, { role: 'quit' } as const] : [{ type: 'separator' } as const, { role: 'close' } as const]),
+        { label: 'Lock Extrovert', accelerator: accel('lock'), click: () => void app.lock() },
+        ...(process.platform !== 'darwin' ? [{ type: 'separator' } as const, { label: 'Settings…', accelerator: accel('settings'), click: () => app.command('settings') }, { role: 'quit' } as const] : [{ type: 'separator' } as const, { role: 'close' } as const]),
       ],
     },
     {
@@ -47,35 +48,35 @@ export function buildMenu(app: Extrovert): void {
         { role: 'undo' }, { role: 'redo' }, { type: 'separator' },
         { role: 'cut' }, { role: 'copy' }, { role: 'paste' }, { role: 'pasteAndMatchStyle' }, { role: 'selectAll' },
         { type: 'separator' },
-        { label: 'Find in Page…', accelerator: 'CmdOrCtrl+F', click: () => app.command('find') },
-        { label: 'Saved Replies…', accelerator: 'CmdOrCtrl+Shift+V', click: () => app.command('replies') },
+        { label: 'Find in Page…', accelerator: accel('find'), click: () => app.command('find') },
+        { label: 'Saved Replies…', accelerator: accel('replies'), click: () => app.command('replies') },
       ],
     },
     {
       label: 'View',
       submenu: [
-        { label: 'Command Palette…', accelerator: 'CmdOrCtrl+K', click: () => app.command('palette') },
-        { label: 'Notifications', accelerator: 'CmdOrCtrl+Shift+N', click: () => app.command('notifications') },
+        { label: 'Command Palette…', accelerator: accel('palette'), click: () => app.command('palette') },
+        { label: 'Notifications', accelerator: accel('notifications'), click: () => app.command('notifications') },
         { label: 'Time Insights', click: () => app.command('insights') },
         { label: 'Task Manager', click: () => app.command('taskManager') },
         { type: 'separator' },
-        { label: 'Zen Mode', accelerator: 'CmdOrCtrl+\\', click: () => app.toggleZen() },
-        { label: 'Reload Service', accelerator: 'CmdOrCtrl+R', click: () => app.reload() },
-        { label: 'Back', accelerator: 'CmdOrCtrl+[', click: withActive((id) => app.views.webContents(id)?.navigationHistory.goBack()) },
-        { label: 'Forward', accelerator: 'CmdOrCtrl+]', click: withActive((id) => app.views.webContents(id)?.navigationHistory.goForward()) },
+        { label: 'Zen Mode', accelerator: accel('zen'), click: () => app.toggleZen() },
+        { label: 'Reload Service', accelerator: accel('reload'), click: () => app.reload() },
+        { label: 'Back', accelerator: accel('back'), click: withActive((id) => app.views.webContents(id)?.navigationHistory.goBack()) },
+        { label: 'Forward', accelerator: accel('forward'), click: withActive((id) => app.views.webContents(id)?.navigationHistory.goForward()) },
         { type: 'separator' },
-        { label: 'Zoom In', accelerator: 'CmdOrCtrl+=', click: withActive((id) => app.setZoom(id, 10)) },
-        { label: 'Zoom Out', accelerator: 'CmdOrCtrl+-', click: withActive((id) => app.setZoom(id, -10)) },
-        { label: 'Actual Size', accelerator: 'CmdOrCtrl+0', click: withActive((id) => app.setZoom(id, 0)) },
+        { label: 'Zoom In', accelerator: accel('zoomIn'), click: withActive((id) => app.setZoom(id, 10)) },
+        { label: 'Zoom Out', accelerator: accel('zoomOut'), click: withActive((id) => app.setZoom(id, -10)) },
+        { label: 'Actual Size', accelerator: accel('zoomReset'), click: withActive((id) => app.setZoom(id, 0)) },
         { type: 'separator' },
-        { label: 'Service Developer Tools', accelerator: 'Alt+CmdOrCtrl+I', click: withActive((id) => app.views.webContents(id)?.openDevTools({ mode: 'detach' })) },
+        { label: 'Service Developer Tools', accelerator: accel('devtools'), click: withActive((id) => app.views.webContents(id)?.openDevTools({ mode: 'detach' })) },
         { role: 'togglefullscreen' },
       ],
     },
     {
       label: 'Go',
       submenu: [
-        { label: 'Next Unread', accelerator: 'CmdOrCtrl+J', click: () => app.goNextUnread() },
+        { label: 'Next Unread', accelerator: accel('nextUnread'), click: () => app.goNextUnread() },
         { label: 'Switch Account…', click: () => app.command('accountMenu') },
         { type: 'separator' },
         ...services.map((inst, k): MenuItemConstructorOptions => ({ label: instanceName(inst), accelerator: `CmdOrCtrl+${k + 1}`, click: () => ws && app.selectInstance(ws.id, inst.id) })),
@@ -84,6 +85,15 @@ export function buildMenu(app: Extrovert): void {
       ],
     },
     { role: 'windowMenu' },
+    {
+      role: 'help',
+      submenu: [
+        { label: 'Shortcuts & Features', accelerator: accel('guide'), click: () => app.command('guide') },
+        { label: 'Feature Tour', click: () => app.command('tour') },
+        { type: 'separator' },
+        { label: 'Report a Problem…', click: () => app.command('feedback') },
+      ],
+    },
   ];
   Menu.setApplicationMenu(Menu.buildFromTemplate(template));
 }

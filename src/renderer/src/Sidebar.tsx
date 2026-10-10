@@ -1,4 +1,5 @@
 import { useRef } from 'react';
+import { keyOf } from '../../core/guide/registry';
 import { groupInstances, instanceName, instanceTag } from '../../core/workspaces/model';
 import { workspaceUnread } from '../../core/unread/aggregate';
 import type { AppSnapshot } from '../../shared/ipc';
@@ -34,7 +35,7 @@ export function Sidebar({ snap, ws, onOpen }: { snap: AppSnapshot; ws: Workspace
           ));
           return group.length > 1 ? <div key={group[0]!.type} className="svc-group" aria-label={`${group.length} ${instanceName({ type: group[0]!.type })} accounts`}>{buttons}</div> : buttons;
         })}
-        <button className="sb-btn" onClick={() => onOpen({ kind: 'addService' })} aria-label="Add service" title={`Add service (${mod}N)`}><Icon name="plus" /></button>
+        <button className="sb-btn" onClick={() => onOpen({ kind: 'addService' })} aria-label="Add service" title={`Add services (${keyOf('addService', isMac)})`}><Icon name="plus" /></button>
       </nav>
       <div className="sb-bottom">
         <button className={`sb-btn ${snap.settings.dnd ? 'dnd' : ''}`} onClick={() => onOpen({ kind: 'notifications' })} aria-label="Notifications"
@@ -46,8 +47,9 @@ export function Sidebar({ snap, ws, onOpen }: { snap: AppSnapshot; ws: Workspace
           <Icon name="download" />
           {downloading > 0 && <span className="badge grey">{downloading}</span>}
         </button>
+        <button className="sb-btn" onClick={() => onOpen({ kind: 'guide' })} aria-label="Shortcuts & features" title={`Shortcuts & features (${keyOf('guide', isMac)})`}><Icon name="command" /></button>
         <button className="sb-btn" onClick={() => onOpen({ kind: 'insights' })} aria-label="Time insights" title="Time insights"><Icon name="chart" /></button>
-        <button className="sb-btn" onClick={() => onOpen({ kind: 'settings' })} aria-label="Settings" title={`Settings (${mod},)`}><Icon name="gear" /></button>
+        <button className="sb-btn" onClick={() => onOpen({ kind: 'settings' })} aria-label="Settings" title={`Settings (${keyOf('settings', isMac)})`}><Icon name="gear" /></button>
       </div>
     </aside>
   );
@@ -58,7 +60,7 @@ function ServiceButton({ snap, ws, inst, active, index, tag, tagColor }: { snap:
   const peeking = useRef(false);
   const name = instanceName(inst);
   const dim = ws.suspended || inst.muted || st?.state === 'sleeping' || st?.state === 'signedout';
-  const status = st?.state === 'signedout' ? 'Signed out' : st?.state === 'sleeping' ? 'Sleeping' : st?.state === 'offline' ? 'Offline'
+  const status = st?.state === 'signedout' ? 'Signed out' : st?.state === 'syncing' ? 'Reconnecting…' : st?.state === 'sleeping' ? 'Sleeping' : st?.state === 'offline' ? 'Offline'
     : st?.unread ? `${st.unread} unread` : st?.state === 'loading' ? 'Loading…' : 'No new items';
   const media = st?.media ?? [];
   const mediaIcon = media.includes('screen') ? 'screen' : media.includes('camera') ? 'camera' : media.includes('mic') ? 'mic' : null;
@@ -85,7 +87,7 @@ function ServiceButton({ snap, ws, inst, active, index, tag, tagColor }: { snap:
       aria-label={`${name}, ${status}`}
       title={`${name} · ${status}${index < 9 ? ` (${mod}${index + 1})` : ''}\nRight-click for more · hold ${isMac ? '⌥' : 'Alt'} to peek`}
     >
-      <ServiceIcon type={inst.type} status={st} name={name} />
+      <ServiceIcon type={inst.type} look={inst} status={st} name={name} />
       {inst.badge && !inst.muted && (st?.unread ?? 0) > 0 && <span key={st!.unread} className="badge pop">{st!.unread > 99 ? '99+' : st!.unread}</span>}
       {inst.badge && !inst.muted && !st?.unread && st?.dot && <span className="badge dot" />}
       {mediaIcon && <span className="media-dot" title={`Using your ${mediaIcon}`}><Icon name={mediaIcon} size={9} /></span>}

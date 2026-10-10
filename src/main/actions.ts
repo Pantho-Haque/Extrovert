@@ -4,7 +4,9 @@
  */
 import { clipboard, ipcMain, shell } from 'electron';
 import { catalog, parseCustomUrl } from '../core/services/catalog';
+import { cleanLook } from '../core/services/look';
 import type { SnoozeChoice } from '../core/notifications/rules';
+import { MAX_DETAILS, MAX_TITLE, SEVERITIES, type Severity } from '../core/feedback/issue';
 import type { ActionName, Actions, FloatingName } from '../shared/ipc';
 import type { Instance, ServiceType, Settings, Workspace } from '../shared/types';
 import type { Extrovert } from './app';
@@ -57,14 +59,14 @@ const handlers: { [K in ActionName]: Handler } = {
       if (type === 'custom') {
         const parsed = parseCustomUrl(str(it.url ?? ''));
         if (!parsed) throw new BadPayload('That address is not a website');
-        return { type, url: parsed.url, label: typeof it.label === 'string' && it.label.trim() ? it.label.trim() : parsed.name };
+        return { type, url: parsed.url, label: typeof it.label === 'string' && it.label.trim() ? it.label.trim() : parsed.name, ...cleanLook(it) };
       }
       return { type, ...(typeof it.label === 'string' && it.label.trim() ? { label: it.label.trim() } : {}) };
     });
     return a.addInstances(str(p.workspaceId), items);
   },
   updateInstance: (a, p) => {
-    const patch = pick<Instance>(obj(p.patch), INSTANCE_FIELDS);
+    const patch: Partial<Instance> = { ...pick<Instance>(obj(p.patch), INSTANCE_FIELDS), ...cleanLook(obj(p.patch)) };
     const perms = obj(p.patch).permissions;
     if (perms !== undefined) {
       // Each device permission is allowed (true), blocked (false) or not decided yet (absent).
@@ -157,7 +159,12 @@ const handlers: { [K in ActionName]: Handler } = {
   },
   checkUpdates: (a) => a.updates.check(),
   installUpdate: (a) => a.updates.install(),
-  sendFeedback: (a, p) => a.sendFeedback(str(p.text, 5000)),
+  systemInfo: (a) => a.systemInfo(),
+  reportProblem: (a, p) => {
+    const severity = str(p.severity);
+    if (!SEVERITIES.some((s) => s.id === severity)) throw new BadPayload('Unknown severity');
+    a.reportProblem({ title: str(p.title, MAX_TITLE), details: str(p.details, MAX_DETAILS), severity: severity as Severity, where: str(p.where, 100) });
+  },
   dismissToast: (a, p) => a.dismissToast(str(p.id)),
   toast: (a, p) => a.toast(str(p.text, 300)),
   showMainWindow: (a) => {

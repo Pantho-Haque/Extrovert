@@ -1,0 +1,38 @@
+# Extrovert's "Report a problem" window (Help → Report a Problem) opens this form with every field
+# filled in. Field ids must match src/core/feedback/issue.ts.
+name: Bug report
+description: Something in Extrovert isn't working
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting! Reports sent from Extrovert (**Help → Report a Problem**) fill this in for you.
+        Everything here is **public**, so leave out private messages, emails and names.
+  - type: input
+    id: severity
+    attributes:
+      label: How bad is it?
+      description: Minor, Annoying, Blocking or Critical
+      placeholder: Annoying
+    validations:
+      required: true
+  - type: input
+    id: service
+    attributes:
+      label: Where?
+      description: Which service, or Extrovert itself
+      placeholder: WhatsApp
+  - type: textarea
+    id: details
+    attributes:
+      label: What happened?
+      description: What were you doing, what did you expect, and what happened instead? Paste screenshots here.
+    validations:
+      required: true
+  - type: textarea
+    id: system
+    attributes:
+      label: System
+      description: Filled in by Extrovert. Contains no personal data.
+      render: text

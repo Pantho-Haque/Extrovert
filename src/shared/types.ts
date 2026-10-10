@@ -17,6 +17,10 @@ export interface Instance {
   session: string;
   /** Nickname, e.g. "WhatsApp · Business". */
   label?: string;
+  /** Websites you added: an icon from the icon pack (src/renderer/src/icon-pack.ts) instead of the site's own icon. */
+  icon?: string;
+  /** Websites you added: the icon's color. */
+  color?: string;
   /** Short tag shown on the icon when a workspace has several of the same service. */
   tag?: string;
   /** Custom services, or an override of the catalog URL. */
@@ -61,6 +65,15 @@ export interface Workspace {
   suspended: boolean;
   workHours: WorkHours;
   proxy?: string;
+  /** Where each login (by session key) was copied from, so it can be copied again when it expires. */
+  loginSources?: Record<string, LoginSource>;
+}
+
+/** A browser profile the user chose to sign in with ("Sign in with your browser"). */
+export interface LoginSource {
+  browserId: string;
+  browserName: string;
+  profileDir: string;
 }
 
 export interface Pin {
@@ -96,6 +109,8 @@ export interface Settings {
   language: string;
   updates: { channel: 'stable' | 'beta'; autoCheck: boolean };
   launchAtLogin: boolean;
+  /** The feature tour was finished or skipped. */
+  tourDone: boolean;
 }
 
 export interface NotificationEntry {
@@ -109,7 +124,7 @@ export interface NotificationEntry {
   pageId?: string;
 }
 
-export type InstanceState = 'loading' | 'live' | 'signedout' | 'sleeping' | 'offline' | 'crashed';
+export type InstanceState = 'loading' | 'live' | 'signedout' | 'syncing' | 'sleeping' | 'offline' | 'crashed';
 export type MediaKind = 'mic' | 'camera' | 'screen';
 
 /** Runtime status of an instance (not persisted). */

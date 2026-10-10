@@ -9,6 +9,8 @@ import { join } from 'node:path';
 import { app, BaseWindow, dialog, Menu, powerMonitor, screen, session, shell, systemPreferences, WebContentsView } from 'electron';
 import { hashPin, verifyPin } from '../core/auth/pin';
 import { chromeUserAgent } from '../core/browser/user-agent';
+import { issueUrl, systemInfo, type Report } from '../core/feedback/issue';
+import { addedIn } from '../core/guide/registry';
 import { isLoginPage, serviceDef } from '../core/services/catalog';
 import { nextUnread, totalUnread } from '../core/unread/aggregate';
 import { DEFAULT_UNREAD_PATTERN, parseUnread } from '../core/unread/parse-title';
@@ -27,7 +29,7 @@ import { Updates } from './updates';
 import { UsageTracker } from './usage-tracker';
 import { ViewHost } from './views';
 import { cancelSignIn, signInWithGoogle } from './google-sign-in';
-import { listBrowsers } from './browser-import';
+import { listBrowsers, resyncSignIn } from './browser-import';
 
 const NETWORK_ERRORS = new Set([-21, -100, -101, -102, -104, -105, -106, -109, -118, -130, -137]);
 const STAGGER_MS = 1200;
@@ -124,8 +126,10 @@ export class Extrovert {
     this.win.on('move', () => this.saveBounds());
     this.win.on('focus', () => this.store.runtime.locked || this.focusActive());
     this.win.on('close', () => this.store.flush());
+    // Quitting closes the window first; nothing may tick against it after that.
+    this.win.on('closed', () => this.timers.forEach(clearInterval));
     powerMonitor.on('resume', () => setTimeout(() => this.recover('Back from sleep'), 4000));
-    setInterval(() => this.minuteTick(), 60_000);
+    this.every(60_000, () => this.minuteTick());
 
     this.store.runtime.touchId = process.platform === 'darwin' && systemPreferences.canPromptTouchID();
     if (this.store.settings.appLock.enabled && this.store.settings.appLock.pinHash) this.lock();
@@ -224,6 +228,12 @@ export class Extrovert {
   }
 
   /** Shows the active service's page, or nothing when the shell must draw a state card over it. */
+  private timers: NodeJS.Timeout[] = [];
+  /** A repeating timer that stops when the window closes (on quit). Use it for anything that touches the window or views. */
+  every(ms: number, fn: () => void): void {
+    this.timers.push(setInterval(fn, ms));
+  }
+
   showActive(): void {
     const ws = this.store.activeWorkspace;
     const inst = this.activeInstance(ws);
@@ -313,13 +323,22 @@ export class Extrovert {
     });
   }
 
-  async checkSignedIn(instanceId: string): Promise<void> {
+  async checkSignedIn(instanceId: string, settled = false): Promise<void> {
     const loc = this.store.locate(instanceId);
     const cookie = loc && serviceDef(loc.inst.type).sessionCookie;
     const st = this.store.statuses[instanceId];
-    if (!loc || !cookie || !st) return;
+    if (!loc || !cookie || !st || st.state === 'syncing') return;
     const found = await session.fromPartition(partitionFor(loc.ws.id, loc.inst.session)).cookies.get({ url: cookie.url });
-    const signedIn = found.some((c) => cookie.names.includes(c.name) && !!c.value);
+    const hasCookie = found.some((c) => cookie.names.includes(c.name) && !!c.value);
+    // The cookie can outlive the login: Google may reject it and show its account chooser instead.
+    // Login pages also flash by during normal redirects, so only one that stays counts.
+    const onLogin = isLoginPage(loc.inst.type, this.views.webContents(instanceId)?.getURL() ?? '');
+    if (hasCookie && onLogin && !settled) {
+      clearTimeout(this.signInChecks.get(instanceId));
+      this.signInChecks.set(instanceId, setTimeout(() => void this.checkSignedIn(instanceId, true), 4000));
+      return;
+    }
+    const signedIn = hasCookie && !onLogin;
     if (signedIn) {
       this.acknowledgedLogout.delete(instanceId);
       if (!loc.inst.signedInOnce) {
@@ -329,7 +348,9 @@ export class Extrovert {
       if (this.browserLoginToast?.instanceId === instanceId) this.dismissToast(this.browserLoginToast.toastId);
       this.store.patchStatus(instanceId, { signedIn, ...(st.state === 'signedout' ? { state: 'live' as const } : {}) });
     } else if (loc.inst.signedInOnce && !this.acknowledgedLogout.has(instanceId) && st.state !== 'signedout') {
-      // Login watchdog (FR-X02): it was signed in, and the login cookie is gone.
+      // Came from the user's browser? Copy it again from there instead of showing a login page.
+      if (await this.resyncLogin(loc.ws, loc.inst.session)) return;
+      // Login watchdog (FR-X02): it was signed in, and the login is gone.
       this.store.patchStatus(instanceId, { signedIn, state: 'signedout' });
       this.notifier.system(`${instanceName(loc.inst)} signed you out`, `${loc.ws.name}: sign in again to keep getting notifications.`, () => this.selectInstance(loc.ws.id, instanceId));
     } else {
@@ -337,6 +358,31 @@ export class Extrovert {
     }
     this.offerBrowserLogin();
     this.showActive();
+  }
+
+  private resyncedAt = new Map<string, number>();
+
+  /**
+   * A login copied from the user's browser expired (sites rotate their login cookies, so a copy goes
+   * stale). Copy it again from that browser, hiding the login page meanwhile. At most every 10 minutes
+   * per login, so a browser that is signed out too can't cause a loop.
+   */
+  private async resyncLogin(ws: Workspace, sessionKey: string): Promise<boolean> {
+    const source = ws.loginSources?.[sessionKey];
+    const key = `${ws.id}:${sessionKey}`;
+    if (!source || Date.now() - (this.resyncedAt.get(key) ?? 0) < 600_000) return false;
+    this.resyncedAt.set(key, Date.now());
+    const open = ws.instances.filter((i) => i.session === sessionKey && this.views.has(i.id));
+    const before = new Map(open.map((i) => [i.id, this.store.statuses[i.id]?.state ?? 'live']));
+    for (const inst of open) this.store.patchStatus(inst.id, { state: 'syncing' });
+    this.showActive();
+    const ok = await resyncSignIn(this, ws, source, open.map((i) => i.id)).catch((e) => {
+      console.warn('[extrovert] re-sync failed', e);
+      return false;
+    });
+    if (!ok) for (const inst of open) if (this.store.statuses[inst.id]?.state === 'syncing') this.store.patchStatus(inst.id, { state: before.get(inst.id)! });
+    this.showActive();
+    return ok;
   }
 
   /** On the login page of a service? Offer the login the user already has in their browser (macOS). */
@@ -385,12 +431,12 @@ export class Extrovert {
   }
 
   // ---------------------------------------------------------------- instances
-  addInstances(workspaceId: string, items: { type: ServiceType; url?: string; label?: string }[]): string[] {
+  addInstances(workspaceId: string, items: { type: ServiceType; url?: string; label?: string; icon?: string | undefined; color?: string | undefined }[]): string[] {
     const ws = this.store.workspace(workspaceId);
     if (!ws) return [];
     const ids: string[] = [];
     for (const item of items) {
-      const inst = newInstance(item.type, ws.instances, `i-${randomUUID().slice(0, 8)}`, { ...(item.label ? { label: item.label } : {}), ...(item.url ? { url: item.url } : {}) });
+      const inst = newInstance(item.type, ws.instances, `i-${randomUUID().slice(0, 8)}`, { ...(item.label ? { label: item.label } : {}), ...(item.url ? { url: item.url } : {}), ...(item.icon ? { icon: item.icon } : {}), ...(item.color ? { color: item.color } : {}) });
       ws.instances.push(inst);
       this.store.statuses[inst.id] = blankStatus(instanceUrl(inst));
       if (!ws.suspended) this.views.ensure(ws, inst);
@@ -477,6 +523,9 @@ export class Extrovert {
   }
 
   async wipeSession(workspaceId: string, sessionKey: string): Promise<void> {
+    // A login the user removed must never come back by itself from their browser.
+    const ws = this.store.workspace(workspaceId);
+    if (ws?.loginSources) delete ws.loginSources[sessionKey];
     const ses = session.fromPartition(partitionFor(workspaceId, sessionKey));
     await ses.clearStorageData();
     await ses.clearCache();
@@ -731,9 +780,29 @@ export class Extrovert {
     });
   }
 
-  sendFeedback(text: string): void {
-    const body = `${text}\n\n---\nExtrovert ${app.getVersion()} · ${process.platform} ${process.getSystemVersion()} · Electron ${process.versions.electron} · ${this.store.workspaces.length} workspaces`;
-    void shell.openExternal(`https://github.com/Pantho-Haque/extrovert/issues/new?body=${encodeURIComponent(body)}`);
+  /** Facts for a bug report: versions and service states only, never names, emails or addresses (issues are public). */
+  systemInfo(): string {
+    const s = this.store.settings;
+    const os = ({ darwin: 'macOS', win32: 'Windows', linux: 'Linux' } as Record<string, string>)[process.platform] ?? process.platform;
+    return systemInfo({
+      version: app.getVersion(),
+      os: `${os} ${process.getSystemVersion()}`,
+      arch: process.arch,
+      electron: process.versions.electron,
+      chrome: process.versions.chrome,
+      workspaces: this.store.workspaces.length,
+      services: this.store.workspaces.flatMap((w) => w.instances.map((i) => {
+        const st = this.store.statuses[i.id];
+        return { name: serviceDef(i.type).name, state: i.enabled ? (st?.state ?? 'not loaded') : 'disabled', signedIn: st?.signedIn };
+      })),
+      settings: { 'Do Not Disturb': s.dnd, digest: s.digest.enabled, 'smart sleep': s.smartHibernation, 'app lock': s.appLock.enabled, 'time insights': s.usageTracking, 'feed guard': s.feedGuard.enabled },
+    });
+  }
+
+  /** Opens the filled-in issue form on GitHub; the user submits it there with their own account. */
+  reportProblem(report: Report): void {
+    void shell.openExternal(issueUrl(report, this.systemInfo()));
+    this.toast('Finish on GitHub: sign in if asked, add a screenshot if you like, then submit.', { ttl: 9000 });
   }
 
   // ---------------------------------------------------------------- toasts, recovery, timers
@@ -818,7 +887,7 @@ export class Extrovert {
   private checkWhatsNew(): void {
     const last = this.store.profile.lastVersion;
     const now = app.getVersion();
-    if (last && last !== now) this.store.runtime.whatsNew = now;
+    if (last && last !== now && addedIn(now).length) this.store.runtime.whatsNew = now;
     if (last !== now) {
       this.store.profile.lastVersion = now;
       this.store.save('profile');

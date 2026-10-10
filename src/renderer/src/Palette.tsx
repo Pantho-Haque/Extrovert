@@ -5,7 +5,8 @@ import { instanceName, orderedInstances } from '../../core/workspaces/model';
 import type { AppSnapshot } from '../../shared/ipc';
 import type { Workspace } from '../../shared/types';
 import { Icon, type IconName } from './icons';
-import { act, findInstance, mod } from './lib';
+import { keyOf } from '../../core/guide/registry';
+import { act, findInstance, isMac } from './lib';
 import type { Overlay } from './Shell';
 import { ServiceIcon, useEscape } from './ui';
 
@@ -37,7 +38,7 @@ export function Palette({ snap, ws, mode, onClose, onOpen }: { snap: AppSnapshot
       const targets = linkTargets(link, snap.workspaces, ws.id);
       const list: Item[] = targets.map((t) => {
         const loc = findInstance(snap, t.instanceId)!;
-        return { group: 'Open link in the right place', text: link, view: <><ServiceIcon type={loc.inst.type} name={instanceName(loc.inst)} status={snap.statuses[t.instanceId]} size={22} /><b>Open in {instanceName(loc.inst)}</b><span>{loc.ws.name}</span><small>{link}</small></>, run: go(() => act('openLink', { ...t, url: link })) };
+        return { group: 'Open link in the right place', text: link, view: <><ServiceIcon type={loc.inst.type} look={loc.inst} name={instanceName(loc.inst)} status={snap.statuses[t.instanceId]} size={22} /><b>Open in {instanceName(loc.inst)}</b><span>{loc.ws.name}</span><small>{link}</small></>, run: go(() => act('openLink', { ...t, url: link })) };
       });
       list.push({ group: 'Open link', text: link, view: <><Icon name="globe" size={20} /><b>Open in your browser</b><small>{link}</small></>, run: go(() => act('openExternal', { url: link })) });
       return list;
@@ -46,7 +47,7 @@ export function Palette({ snap, ws, mode, onClose, onOpen }: { snap: AppSnapshot
     for (const w of snap.workspaces) {
       for (const inst of orderedInstances(w.instances)) {
         const st = snap.statuses[inst.id];
-        all.push({ group: 'Services', text: `${instanceName(inst)} ${w.name}`, view: <><ServiceIcon type={inst.type} name={instanceName(inst)} status={st} size={22} /><b>{instanceName(inst)}</b><span>{w.name}</span>{(st?.unread ?? 0) > 0 && <em className="badge inline">{st!.unread}</em>}</>, run: go(() => act('selectInstance', { workspaceId: w.id, instanceId: inst.id })) });
+        all.push({ group: 'Services', text: `${instanceName(inst)} ${w.name}`, view: <><ServiceIcon type={inst.type} look={inst} name={instanceName(inst)} status={st} size={22} /><b>{instanceName(inst)}</b><span>{w.name}</span>{(st?.unread ?? 0) > 0 && <em className="badge inline">{st!.unread}</em>}</>, run: go(() => act('selectInstance', { workspaceId: w.id, instanceId: inst.id })) });
       }
     }
     for (const p of snap.settings.pins) {
@@ -54,18 +55,21 @@ export function Palette({ snap, ws, mode, onClose, onOpen }: { snap: AppSnapshot
       if (loc) all.push({ group: 'Pins', text: p.title, view: <><Icon name="pin" size={18} /><b>{p.title}</b><span>{instanceName(loc.inst)} · {loc.ws.name}</span></>, run: go(() => act('openPin', { id: p.id })) });
     }
     const actions: [string, IconName, () => unknown, string?][] = [
-      ['Next unread', 'zap', () => act('nextUnread'), `${mod}J`],
+      ['Next unread', 'zap', () => act('nextUnread'), keyOf('nextUnread', isMac)],
       [snap.settings.dnd ? 'Turn off Do Not Disturb' : 'Turn on Do Not Disturb', 'moon', () => act('updateSettings', { patch: { dnd: !snap.settings.dnd } })],
       ['Notifications', 'bell', () => onOpen({ kind: 'notifications' })],
       ['People waiting on me', 'users', () => onOpen({ kind: 'notifications', tab: 'people' })],
       ['Time insights', 'chart', () => onOpen({ kind: 'insights' })],
       ['Task manager', 'activity', () => onOpen({ kind: 'taskManager' })],
       ['Add a service', 'plus', () => onOpen({ kind: 'addService' })],
-      ['Saved replies', 'type', () => onOpen({ kind: 'palette', mode: 'replies' }), `${mod}⇧V`],
-      ['Zen mode', 'expand', () => act('toggleZen'), `${mod}\\`],
-      ['Lock Extrovert', 'lock', () => act('lock'), `${mod}⇧L`],
+      ['Saved replies', 'type', () => onOpen({ kind: 'palette', mode: 'replies' }), keyOf('replies', isMac)],
+      ['Zen mode', 'expand', () => act('toggleZen'), keyOf('zen', isMac)],
+      ['Lock Extrovert', 'lock', () => act('lock'), keyOf('lock', isMac)],
       ['Downloads', 'download', () => onOpen({ kind: 'downloads' })],
-      ['Settings', 'gear', () => onOpen({ kind: 'settings' }), `${mod},`],
+      ['Settings', 'gear', () => onOpen({ kind: 'settings' }), keyOf('settings', isMac)],
+      ['Shortcuts & features', 'command', () => onOpen({ kind: 'guide' }), keyOf('guide', isMac)],
+      ['Feature tour', 'compass', () => onOpen({ kind: 'tour' })],
+      ['Report a problem', 'alert', () => onOpen({ kind: 'feedback' })],
     ];
     for (const [text, icon, run, key] of actions) {
       all.push({ group: 'Actions', text, view: <><Icon name={icon} size={18} /><b>{text}</b>{key && <kbd>{key}</kbd>}</>, run: () => { onClose(); void run(); } });

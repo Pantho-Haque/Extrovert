@@ -3,7 +3,8 @@ import { useState } from 'react';
 import { groupByPerson } from '../../core/notifications/rules';
 import { instanceName } from '../../core/workspaces/model';
 import type { AppSnapshot } from '../../shared/ipc';
-import { Icon } from './icons';
+import { FEATURE_GROUPS } from '../../core/guide/registry';
+import { Icon, isIconName } from './icons';
 import { act, findInstance } from './lib';
 import { Brand, Modal, PersonAvatar, ServiceIcon } from './ui';
 
@@ -55,7 +56,7 @@ export function PermissionPrompt({ snap }: { snap: AppSnapshot }) {
     <div className="backdrop">
       <div className="modal" role="alertdialog" aria-label="Permission request">
         <div className="modal-b" style={{ textAlign: 'center', paddingTop: 26 }}>
-          {loc && <ServiceIcon type={loc.inst.type} name={instanceName(loc.inst)} status={snap.statuses[loc.inst.id]} size={48} />}
+          {loc && <ServiceIcon type={loc.inst.type} look={loc.inst} name={instanceName(loc.inst)} status={snap.statuses[loc.inst.id]} size={48} />}
           <h3>{name} wants to use your {p.what}</h3>
           <p className="muted">Extrovert remembers your answer for this service. You can change it any time in Settings → Privacy.</p>
           <div className="modal-f" style={{ justifyContent: 'center' }}>
@@ -94,7 +95,7 @@ export function FeedGuard({ snap }: { snap: AppSnapshot }) {
   return (
     <div className="fg">
       <div className="fg-card" role="dialog" aria-label="Still want to scroll?">
-        <div className="ring" style={{ ['--p' as string]: pct }}>{loc && <ServiceIcon type={loc.inst.type} name={instanceName(loc.inst)} status={snap.statuses[fg.instanceId]} size={40} />}</div>
+        <div className="ring" style={{ ['--p' as string]: pct }}>{loc && <ServiceIcon type={loc.inst.type} look={loc.inst} name={instanceName(loc.inst)} status={snap.statuses[fg.instanceId]} size={40} />}</div>
         <h2>Still want to scroll?</h2>
         <p>You've spent <b>{fg.todayMin} min</b> on {loc ? instanceName(loc.inst) : 'this feed'} today{fg.budgetMin !== undefined ? <>. Your daily budget is <b>{fg.budgetMin} min</b></> : ''}.</p>
         <small>Messaging is never limited. Feed guard is optional; change it in Settings → Wellbeing.</small>
@@ -126,7 +127,7 @@ export function Recap({ snap }: { snap: AppSnapshot }) {
               <div key={p.person} className="recap-row" onClick={() => { void close(); void act('openNotification', { id: p.entries[0]!.id }); }}>
                 <PersonAvatar name={p.person} size={28} />
                 <b>{p.person}</b>
-                <span className="recap-apps">{[...new Set(p.entries.map((e) => e.instanceId))].map((id) => { const loc = findInstance(snap, id); return loc ? <ServiceIcon key={id} type={loc.inst.type} status={snap.statuses[id]} size={16} /> : null; })}</span>
+                <span className="recap-apps">{[...new Set(p.entries.map((e) => e.instanceId))].map((id) => { const loc = findInstance(snap, id); return loc ? <ServiceIcon key={id} type={loc.inst.type} look={loc.inst} status={snap.statuses[id]} size={16} /> : null; })}</span>
                 <small>{p.entries.length} · {p.entries[0]!.body}</small>
               </div>
             ))}
@@ -141,37 +142,17 @@ export function Recap({ snap }: { snap: AppSnapshot }) {
   );
 }
 
-const CHANGES: [Parameters<typeof Icon>[0]['name'], string, string][] = [
-  ['users', 'People view', 'See who is waiting on you, grouped by person across platforms.'],
-  ['clock', 'Snooze to the exact chat', 'Snoozed notifications reopen the exact conversation.'],
-  ['shield', 'Screen-share shield', 'Previews hide automatically while you present.'],
-  ['zap', 'Faster startup', 'Messaging apps load first, everything else follows.'],
-];
-
 export function WhatsNew({ snap, onFeedback }: { snap: AppSnapshot; onFeedback: () => void }) {
   const close = () => act('dismissWhatsNew');
+  // Features tagged `added` with this version in the registry (src/core/guide/registry.ts).
+  const version = snap.runtime.whatsNew ?? '';
+  const changes = FEATURE_GROUPS.flatMap((g) => g.features.filter((f) => f.added === version).map((f) => ({ ...f, icon: isIconName(g.icon) ? g.icon : 'star' as const })));
   return (
     <Modal title={`What's new in ${snap.runtime.whatsNew}`} onClose={close}>
-      <div className="wn">{CHANGES.map(([icon, t, d]) => <div key={t} className="wn-i"><span><Icon name={icon} size={18} /></span><div><b>{t}</b><p>{d}</p></div></div>)}</div>
+      <div className="wn">{changes.map((f) => <div key={f.title} className="wn-i"><span><Icon name={f.icon} size={18} /></span><div><b>{f.title}</b><p>{f.text}</p></div></div>)}</div>
       <div className="modal-f">
-        <button className="btn" onClick={() => { void close(); onFeedback(); }}>Send feedback</button>
+        <button className="btn" onClick={() => { void close(); onFeedback(); }}>Report a problem</button>
         <button className="btn primary" onClick={close}>Got it</button>
-      </div>
-    </Modal>
-  );
-}
-
-export function Feedback({ snap, onClose }: { snap: AppSnapshot; onClose: () => void }) {
-  const [text, setText] = useState('');
-  const info = `Extrovert ${snap.version} · ${snap.platform} · ${snap.workspaces.length} workspaces · ${snap.workspaces.reduce((n, w) => n + w.instances.length, 0)} services`;
-  return (
-    <Modal title="Send feedback" onClose={onClose}>
-      <p className="muted">Nothing is sent automatically. Review everything, then open it as a GitHub issue or copy it.</p>
-      <textarea className="field" autoFocus placeholder="What happened? What did you expect?" value={text} onChange={(e) => setText(e.target.value)} />
-      <div className="note"><Icon name="file" size={16} /><p><b>System info that will be attached:</b><br /><code>{info}</code></p></div>
-      <div className="modal-f">
-        <button className="btn" onClick={() => act('copyText', { text: `${text}\n\n---\n${info}` })}>Copy to clipboard</button>
-        <button className="btn primary" disabled={!text.trim()} onClick={() => { void act('sendFeedback', { text }); onClose(); }}>Open as GitHub issue</button>
       </div>
     </Modal>
   );

@@ -76,7 +76,7 @@ function Row({ snap, n, onOpen }: { snap: AppSnapshot; n: NotificationEntry; onO
     <div className="nrow" onClick={onOpen}>
       <div className="nrow-av">
         <PersonAvatar name={n.sender} size={36} />
-        {loc && <span className="nrow-logo"><ServiceIcon type={loc.inst.type} name={instanceName(loc.inst)} status={snap.statuses[loc.inst.id]} size={16} /></span>}
+        {loc && <span className="nrow-logo"><ServiceIcon type={loc.inst.type} look={loc.inst} name={instanceName(loc.inst)} status={snap.statuses[loc.inst.id]} size={16} /></span>}
       </div>
       <div className="nrow-m">
         <b>{vip && <span className="vip"><Icon name="star" size={11} /></span>}{n.sender}</b>
@@ -116,7 +116,7 @@ function People({ snap, list, onOpen }: { snap: AppSnapshot; list: NotificationE
                 <div className="papps">
                   {[...byService].map(([instanceId, count]) => {
                     const loc = findInstance(snap, instanceId);
-                    return loc ? <span key={instanceId}><ServiceIcon type={loc.inst.type} name={instanceName(loc.inst)} status={snap.statuses[instanceId]} size={16} /> {count} {instanceName(loc.inst)}</span> : null;
+                    return loc ? <span key={instanceId}><ServiceIcon type={loc.inst.type} look={loc.inst} name={instanceName(loc.inst)} status={snap.statuses[instanceId]} size={16} /> {count} {instanceName(loc.inst)}</span> : null;
                   })}
                 </div>
               </div>

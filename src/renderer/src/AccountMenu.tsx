@@ -1,5 +1,6 @@
 /** Gmail-style account menu (FR-W04): current account, every other account with its unread count, add, sign out. */
 import { useState } from 'react';
+import { keyOf } from '../../core/guide/registry';
 import { workspaceUnread } from '../../core/unread/aggregate';
 import type { AppSnapshot } from '../../shared/ipc';
 import type { Workspace } from '../../shared/types';
@@ -57,7 +58,7 @@ export function AccountMenu({ snap, ws, onClose, onOpen }: { snap: AppSnapshot; 
         ) : (
           <div className="acct-foot">
             <button className="linkish" onClick={() => setConfirmSignOut(true)}><Icon name="logout" size={14} /> Sign out of {ws.name}</button>
-            <small>{isMac ? '⌘⇧' : 'Ctrl+Shift+'}1–9</small>
+            <small>{keyOf('workspace', isMac)}</small>
           </div>
         )}
       </div>

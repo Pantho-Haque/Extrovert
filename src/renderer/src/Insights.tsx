@@ -37,7 +37,7 @@ export function Insights({ snap, onClose }: { snap: AppSnapshot; onClose: () => 
               const over = budget !== undefined && seconds >= budget * 60;
               return (
                 <div key={instanceId} className="ins-row">
-                  <ServiceIcon type={loc!.inst.type} name={instanceName(loc!.inst)} status={snap.statuses[instanceId]} size={26} />
+                  <ServiceIcon type={loc!.inst.type} look={loc!.inst} name={instanceName(loc!.inst)} status={snap.statuses[instanceId]} size={26} />
                   <div className="ins-name"><b>{instanceName(loc!.inst)}</b><small>{loc!.ws.name}</small></div>
                   <div className="ins-bar">
                     <span className={over ? 'over' : ''} style={{ width: `${(seconds / max) * 100}%` }} />
@@ -95,7 +95,7 @@ export function TaskManager({ snap, onClose }: { snap: AppSnapshot; onClose: () 
         <tbody>
           {rows.map(({ ws, inst, st, m }) => (
             <tr key={inst.id}>
-              <td className="svc-cell"><ServiceIcon type={inst.type} name={instanceName(inst)} status={st} size={22} />{instanceName(inst)}</td>
+              <td className="svc-cell"><ServiceIcon type={inst.type} look={inst} name={instanceName(inst)} status={st} size={22} />{instanceName(inst)}</td>
               <td><span className="dotc" style={{ background: ws.color }} />{ws.name}</td>
               <td><span className={`st st-${ws.suspended ? 'paused' : st?.state ?? 'sleeping'}`}>{ws.suspended ? 'Paused' : label(st?.state)}</span></td>
               <td>{m ? <><span className="membar"><span style={{ width: `${(m.memoryMB / maxMem) * 100}%` }} /></span>{m.memoryMB} MB</> : '–'}</td>

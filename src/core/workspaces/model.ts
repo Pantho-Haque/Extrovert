@@ -99,7 +99,7 @@ export function newInstance(
   type: ServiceType,
   siblings: Instance[],
   id: string,
-  opts: { label?: string; url?: string } = {},
+  opts: { label?: string; url?: string; icon?: string; color?: string } = {},
 ): Instance {
   const same = siblings.filter((i) => i.type === type).length;
   const label = opts.label ?? (type !== 'custom' && same > 0 ? `${serviceDef(type).name} ${same + 1}` : undefined);
@@ -109,6 +109,8 @@ export function newInstance(
     session: defaultSession(type, siblings, id),
     ...(label ? { label } : {}),
     ...(opts.url ? { url: opts.url } : {}),
+    ...(opts.icon ? { icon: opts.icon } : {}),
+    ...(opts.color ? { color: opts.color } : {}),
     enabled: true,
     muted: false,
     alerts: true,

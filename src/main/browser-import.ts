@@ -14,6 +14,7 @@ import { decryptMacCookie, deriveMacKey, toCookieToSet, type ChromiumCookieRow }
 import { domainsOf, isServiceUrl } from '../core/services/catalog';
 import { instanceName, partitionFor, startUrl } from '../core/workspaces/model';
 import type { BrowserInfo, ImportResult } from '../shared/ipc';
+import type { LoginSource, Workspace } from '../shared/types';
 import type { Extrovert } from './app';
 
 const run = promisify(execFile);
@@ -70,7 +71,11 @@ function profilesOf(b: BrowserDef): BrowserInfo['profiles'] {
   }
 }
 
-export async function importSignIns(xt: Extrovert, req: { workspaceId: string; browserId: string; profileDir: string; instanceIds: string[] }): Promise<ImportResult[]> {
+/**
+ * Copies the logins into Extrovert. `fresh` (used when an imported login expired) first drops the
+ * session's old cookies, so nothing stale is left next to the new ones.
+ */
+export async function importSignIns(xt: Extrovert, req: { workspaceId: string; browserId: string; profileDir: string; instanceIds: string[]; fresh?: boolean }): Promise<ImportResult[]> {
   // Validate everything from the UI against what we detected ourselves: never trust a path from the renderer.
   const browser = BROWSERS.find((b) => b.id === req.browserId);
   const listed = listBrowsers().find((b) => b.id === req.browserId);
@@ -91,8 +96,9 @@ export async function importSignIns(xt: Extrovert, req: { workspaceId: string; b
     const copyInto = async (ses: Electron.Session, domains: string[]) => {
       let imported = 0;
       let failed = 0;
-      for (const row of rows) {
-        if (!isServiceUrl({ domains }, `https://${row.host_key.replace(/^\./, '')}/`)) continue;
+      const matching = rows.filter((row) => isServiceUrl({ domains }, `https://${row.host_key.replace(/^\./, '')}/`));
+      if (req.fresh && matching.length) await ses.clearStorageData({ storages: ['cookies'] });
+      for (const row of matching) {
         try {
           const value = row.encrypted_value.length ? decryptMacCookie(row.encrypted_value, key, schema) : row.value;
           const cookie = toCookieToSet(row, value, now);
@@ -114,6 +120,8 @@ export async function importSignIns(xt: Extrovert, req: { workspaceId: string; b
       if (!done.has(inst.session)) done.set(inst.session, copyInto(ses, domains));
       const { imported, failed } = await done.get(inst.session)!;
       if (imported) {
+        // Remember the browser, so this login can be copied again by itself when it expires.
+        ws.loginSources = { ...ws.loginSources, [inst.session]: { browserId: browser.id, browserName: browser.name, profileDir: req.profileDir } };
         // Start from the service's home page with the new cookies, as if freshly signed in.
         inst.signedInOnce = true;
         xt.store.patchStatus(inst.id, { state: 'loading' });
@@ -133,6 +141,12 @@ export async function importSignIns(xt: Extrovert, req: { workspaceId: string; b
   }
 }
 
+/** Copies an expired login again from the browser it first came from. True if anything was copied. */
+export async function resyncSignIn(xt: Extrovert, ws: Workspace, source: LoginSource, instanceIds: string[]): Promise<boolean> {
+  const results = await importSignIns(xt, { workspaceId: ws.id, browserId: source.browserId, profileDir: source.profileDir, instanceIds, fresh: true });
+  return results.some((r) => r.imported > 0);
+}
+
 function readCookies(path: string): { rows: ChromiumCookieRow[]; schema: number } {
   const db = new DatabaseSync(path);
   try {
@@ -145,10 +159,16 @@ function readCookies(path: string): { rows: ChromiumCookieRow[]; schema: number 
   }
 }
 
+// Kept in memory only, so a re-sync doesn't ask macOS again while the app runs. Never written to disk.
+const passwords = new Map<string, string>();
+
 /** macOS shows its own "allow access" prompt here; the user can deny, and we never store the password. */
 async function readKeychainPassword(browser: BrowserDef): Promise<string> {
+  const cached = passwords.get(browser.id);
+  if (cached) return cached;
   try {
     const { stdout } = await run('security', ['find-generic-password', '-w', '-s', browser.keychainService], { timeout: 120_000 });
+    passwords.set(browser.id, stdout.trim());
     return stdout.trim();
   } catch {
     throw new Error(`macOS didn't allow access to ${browser.name}'s saved logins. Click "Allow" when asked.`);

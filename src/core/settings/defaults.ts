@@ -25,6 +25,7 @@ export const DEFAULT_SETTINGS: Settings = {
   language: 'en',
   updates: { channel: 'stable', autoCheck: true },
   launchAtLogin: false,
+  tourDone: false,
 };
 
 const isObject = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
