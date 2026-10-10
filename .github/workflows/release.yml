@@ -1,13 +1,24 @@
-# The only workflow: nothing runs on a normal push, only when a version tag is pushed.
-# Publishing a release: push a version tag.
+# The only workflow: nothing runs on a normal push.
+#
+# Publish a release: push a version tag that matches "version" in package.json.
 #   git tag v0.1.0 && git push origin v0.1.0        → a normal release (everyone gets it)
 #   git tag v0.2.0-beta.1 && git push origin …       → a pre-release (only the Beta update channel)
-# The tag must match "version" in package.json. Tests run once (on Linux, the cheapest runner); then
-# each system builds its own installers into a draft release, published once all three succeeded.
+# Tests run once (on Linux, the cheapest runner); then each system builds its own installers into a
+# draft release, which is published once every build succeeded.
+#
+# Rebuild one system without paying for the others (e.g. after a Linux-only fix): Actions → Release →
+# Run workflow → pick the branch and the system. It uploads to the release for package.json's version.
 name: Release
 on:
   push:
     tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      only:
+        description: Build only this system
+        type: choice
+        options: [all, macos, windows, linux]
+        default: all
 
 permissions:
   contents: write
@@ -15,39 +26,46 @@ permissions:
 jobs:
   draft:
     runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.tag.outputs.tag }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: 24
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm typecheck
       - run: pnpm test
-      - name: Tag matches package.json
+      - name: Release tag
+        id: tag
         run: |
-          version=$(node -p "require('./package.json').version")
-          [ "v$version" = "$GITHUB_REF_NAME" ] || { echo "Tag $GITHUB_REF_NAME does not match package.json version $version"; exit 1; }
+          tag="v$(node -p "require('./package.json').version")"
+          if [ "$GITHUB_EVENT_NAME" = push ] && [ "$tag" != "$GITHUB_REF_NAME" ]; then
+            echo "Tag $GITHUB_REF_NAME does not match package.json version ($tag)"; exit 1
+          fi
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
       - name: Create the draft release with generated notes
         env:
           GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.tag.outputs.tag }}
         run: |
-          gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1 || \
-            gh release create "$GITHUB_REF_NAME" --draft --title "Extrovert ${GITHUB_REF_NAME#v}" --generate-notes \
-              $([[ "$GITHUB_REF_NAME" == *-* ]] && echo --prerelease)
+          gh release view "$TAG" >/dev/null 2>&1 || \
+            gh release create "$TAG" --draft --title "Extrovert ${TAG#v}" --generate-notes --target "$GITHUB_SHA" \
+              $([[ "$TAG" == *-* ]] && echo --prerelease)
 
   build:
     needs: draft
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-latest, windows-latest, ubuntu-latest]
+        os: ${{ fromJSON(inputs.only == 'macos' && '["macos-latest"]' || inputs.only == 'windows' && '["windows-latest"]' || inputs.only == 'linux' && '["ubuntu-latest"]' || '["macos-latest","windows-latest","ubuntu-latest"]') }}
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: 24
           cache: pnpm
@@ -61,10 +79,10 @@ jobs:
         run: pnpm build && pnpm exec electron-builder --publish always
 
   publish:
-    needs: build
+    needs: [draft, build]
     runs-on: ubuntu-latest
     steps:
       - name: Publish the release
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release edit "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" --draft=false
+        run: gh release edit "${{ needs.draft.outputs.tag }}" --repo "$GITHUB_REPOSITORY" --draft=false

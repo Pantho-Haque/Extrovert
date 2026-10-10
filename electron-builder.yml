@@ -60,6 +60,8 @@ linux:
 deb:
   # .deb installs can't update themselves; the app tells you and links the new one instead.
   packageName: extrovert
+  # Required by .deb. A GitHub no-reply address: installer metadata is public.
+  maintainer: Pantho Haque <Pantho-Haque@users.noreply.github.com>
 
 publish:
   provider: github
