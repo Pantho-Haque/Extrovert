@@ -1,32 +1,50 @@
 /**
- * Updates from GitHub Releases (FR-L02, §7.4): check at startup and every 6 hours, download in the
- * background, install on restart. Unsigned Mac builds can't self-install (decision D9), so they get
- * a "download from GitHub" link instead.
+ * Updates from GitHub Releases: check at startup and every 6 hours.
+ * - Windows and the Linux AppImage download the update in the background and install it on restart.
+ * - macOS (the app isn't signed with a paid Apple certificate, so it can't replace itself) and .deb
+ *   installs are told a new version is out, with a one-click download of that version's installer.
+ * The beta channel also sees pre-releases (tags like v0.2.0-beta.1).
  */
 import { app, shell } from 'electron';
 import electronUpdater from 'electron-updater';
 import type { Extrovert } from './app';
 
 const { autoUpdater } = electronUpdater;
-const RELEASES = 'https://github.com/Pantho-Haque/Extrovert/releases/latest';
+const REPO = 'https://github.com/Pantho-Haque/Extrovert';
+const RELEASES = `${REPO}/releases`;
 const SIX_HOURS = 6 * 3_600_000;
+
+/** Installs that can't update themselves, and the installer they should download instead. */
+const MANUAL_ASSET = process.platform === 'darwin' ? 'Extrovert-mac.dmg' : process.platform === 'linux' && !process.env.APPIMAGE ? 'Extrovert-linux.deb' : null;
+export const downloadUrl = (version: string): string => (MANUAL_ASSET ? `${RELEASES}/download/v${version}/${MANUAL_ASSET}` : `${RELEASES}/tag/v${version}`);
 
 export class Updates {
   private timer: NodeJS.Timeout | undefined;
 
   constructor(private readonly app: Extrovert) {
-    autoUpdater.autoDownload = true;
+    autoUpdater.autoDownload = !MANUAL_ASSET;
     autoUpdater.on('update-available', (info) => {
-      app.store.runtime.update = { version: info.version, ready: false };
+      app.store.runtime.update = { version: info.version, ready: false, manual: !!MANUAL_ASSET };
       app.store.emit();
+      if (MANUAL_ASSET) {
+        app.toast(`Extrovert ${info.version} is out.`, {
+          persistent: true,
+          actions: [
+            { label: 'Download', action: 'openExternal', payload: { url: downloadUrl(info.version) } },
+            { label: "What's new", action: 'openExternal', payload: { url: `${RELEASES}/tag/v${info.version}` } },
+          ],
+        });
+      }
     });
     autoUpdater.on('update-downloaded', (info) => {
-      app.store.runtime.update = { version: info.version, ready: true, ...(typeof info.releaseNotes === 'string' ? { notes: info.releaseNotes } : {}) };
+      app.store.runtime.update = { version: info.version, ready: true, manual: false, ...(typeof info.releaseNotes === 'string' ? { notes: info.releaseNotes } : {}) };
       app.toast(`Extrovert ${info.version} is ready to install.`, { persistent: true, actions: [{ label: 'Restart now', action: 'installUpdate' }] });
     });
     autoUpdater.on('error', () => {
-      if (app.store.runtime.update && !app.store.runtime.update.ready) {
-        app.toast(`Extrovert ${app.store.runtime.update.version} is available.`, { persistent: true, actions: [{ label: 'Download', action: 'openExternal', payload: { url: RELEASES } }] });
+      // A failed background download: offer the release page instead of failing silently.
+      const update = app.store.runtime.update;
+      if (update && !update.ready && !update.manual) {
+        app.toast(`Extrovert ${update.version} is available.`, { persistent: true, actions: [{ label: 'Download', action: 'openExternal', payload: { url: `${RELEASES}/tag/v${update.version}` } }] });
       }
     });
     this.configure();
@@ -51,7 +69,8 @@ export class Updates {
   }
 
   install(): void {
-    if (this.app.store.runtime.update?.ready) autoUpdater.quitAndInstall();
-    else void shell.openExternal(RELEASES);
+    const update = this.app.store.runtime.update;
+    if (update?.ready) autoUpdater.quitAndInstall();
+    else void shell.openExternal(update ? downloadUrl(update.version) : `${RELEASES}/latest`);
   }
 }

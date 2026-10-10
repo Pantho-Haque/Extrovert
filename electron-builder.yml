@@ -1,0 +1,68 @@
+# Installers for GitHub Releases. Built by .github/workflows/release.yml when a v* tag is pushed;
+# locally: `pnpm dist` (current system only, nothing published).
+appId: io.github.panthohaque.extrovert
+productName: Extrovert
+copyright: Copyright © 2026 Pantho Haque
+
+directories:
+  buildResources: resources
+  output: release
+
+files:
+  - out/**
+  - resources/**
+  - package.json
+# The app reads its icons from resources/ with native APIs, which can't look inside app.asar.
+asarUnpack:
+  - resources/**
+
+# Stable file names (no version), so the website and README can link to
+# https://github.com/Pantho-Haque/Extrovert/releases/latest/download/<name>
+mac:
+  icon: resources/icon.png
+  category: public.app-category.social-networking
+  target:
+    - target: dmg
+      arch: universal
+    - target: zip
+      arch: universal
+  artifactName: Extrovert-mac.${ext}
+  # Not signed with a paid Apple certificate yet: ad-hoc signed, so macOS asks once on first open.
+  identity: "-"
+  hardenedRuntime: false
+  extendInfo:
+    NSCameraUsageDescription: Services you add (WhatsApp, Meet, Messenger…) can use your camera for calls.
+    NSMicrophoneUsageDescription: Services you add (WhatsApp, Meet, Messenger…) can use your microphone for calls.
+dmg:
+  title: Extrovert
+
+win:
+  icon: resources/icon.png
+  target:
+    - target: nsis
+      arch: x64
+  artifactName: Extrovert-Setup.${ext}
+nsis:
+  oneClick: true
+  perMachine: false
+  shortcutName: Extrovert
+
+linux:
+  icon: resources/icon.png
+  category: Network;InstantMessaging;
+  synopsis: All your communities. One space.
+  target:
+    - target: AppImage
+      arch: x64
+    - target: deb
+      arch: x64
+  artifactName: Extrovert-linux.${ext}
+deb:
+  # .deb installs can't update themselves; the app tells you and links the new one instead.
+  packageName: extrovert
+
+publish:
+  provider: github
+  owner: Pantho-Haque
+  repo: Extrovert
+  releaseType: draft

@@ -625,3 +625,7 @@ button.art-row.on:hover { background: var(--accent-soft); }
 .faq details[open] { background: color-mix(in srgb, var(--accent) 5%, transparent); }
 .faq details[open] summary { color: var(--accent); }
 @media (max-width: 860px) { .faq-wrap { grid-template-columns: 1fr; gap: 20px; } .faq-side { position: static; } }
+
+.release-line { display: inline-flex; gap: 5px; align-items: center; }
+.release-line[hidden] { display: none; }
+.inst-all { display: flex; flex-wrap: wrap; gap: 14px; justify-content: space-between; margin: 0; padding: 4px 28px 16px; color: var(--muted); font-size: 13px; }

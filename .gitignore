@@ -10,4 +10,9 @@
 node_modules/
 out/
 dist/
+release/
+*.log
+coverage/
+.vscode/
+.idea/
 .DS_Store

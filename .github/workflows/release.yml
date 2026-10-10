@@ -1,0 +1,70 @@
+# The only workflow: nothing runs on a normal push, only when a version tag is pushed.
+# Publishing a release: push a version tag.
+#   git tag v0.1.0 && git push origin v0.1.0        → a normal release (everyone gets it)
+#   git tag v0.2.0-beta.1 && git push origin …       → a pre-release (only the Beta update channel)
+# The tag must match "version" in package.json. Tests run once (on Linux, the cheapest runner); then
+# each system builds its own installers into a draft release, published once all three succeeded.
+name: Release
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  draft:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm typecheck
+      - run: pnpm test
+      - name: Tag matches package.json
+        run: |
+          version=$(node -p "require('./package.json').version")
+          [ "v$version" = "$GITHUB_REF_NAME" ] || { echo "Tag $GITHUB_REF_NAME does not match package.json version $version"; exit 1; }
+      - name: Create the draft release with generated notes
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1 || \
+            gh release create "$GITHUB_REF_NAME" --draft --title "Extrovert ${GITHUB_REF_NAME#v}" --generate-notes \
+              $([[ "$GITHUB_REF_NAME" == *-* ]] && echo --prerelease)
+
+  build:
+    needs: draft
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Build and upload installers
+        env:
+          GH_TOKEN: ${{ github.token }}
+          # Google sign-in, from the repository's Actions secrets (Settings → Secrets and variables → Actions).
+          MAIN_VITE_GOOGLE_CLIENT_ID: ${{ secrets.MAIN_VITE_GOOGLE_CLIENT_ID }}
+          MAIN_VITE_GOOGLE_CLIENT_SECRET: ${{ secrets.MAIN_VITE_GOOGLE_CLIENT_SECRET }}
+        run: pnpm build && pnpm exec electron-builder --publish always
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Publish the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release edit "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" --draft=false

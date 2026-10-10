@@ -30,13 +30,16 @@ No account with us, no server, no tracking. Everything stays on your computer.
 
 ## Install
 
-Download the file for your computer from the [latest release](https://github.com/Pantho-Haque/Extrovert/releases/latest).
+[![Latest release](https://img.shields.io/github/v/release/Pantho-Haque/Extrovert?label=latest&color=6366F1)](https://github.com/Pantho-Haque/Extrovert/releases/latest)
 
-| System | File | Install |
+| System | Download | Install |
 |---|---|---|
-| **macOS** (Apple silicon & Intel) | `Extrovert-<version>.dmg` | Open it and drag Extrovert to Applications. |
-| **Windows** 10 and 11 | `Extrovert-Setup-<version>.exe` | Run it. |
-| **Linux** | `Extrovert-<version>.AppImage` | `chmod +x Extrovert-*.AppImage`, then run it. |
+| **macOS** 12+ (Apple silicon & Intel) | [**Extrovert-mac.dmg**](https://github.com/Pantho-Haque/Extrovert/releases/latest/download/Extrovert-mac.dmg) | Open it and drag Extrovert to Applications. |
+| **Windows** 10 and 11 (64-bit) | [**Extrovert-Setup.exe**](https://github.com/Pantho-Haque/Extrovert/releases/latest/download/Extrovert-Setup.exe) | Run it. |
+| **Linux** (x64) | [**Extrovert-linux.AppImage**](https://github.com/Pantho-Haque/Extrovert/releases/latest/download/Extrovert-linux.AppImage) | `chmod +x Extrovert-linux.AppImage`, then run it. |
+| **Debian / Ubuntu** (x64) | [**Extrovert-linux.deb**](https://github.com/Pantho-Haque/Extrovert/releases/latest/download/Extrovert-linux.deb) | `sudo apt install ./Extrovert-linux.deb` |
+
+Every release, with notes: [GitHub Releases](https://github.com/Pantho-Haque/Extrovert/releases).
 
 ### "Unidentified developer" warnings
 
@@ -50,7 +53,11 @@ Extrovert isn't signed with a paid Apple or Microsoft certificate yet, so your s
 
 ### Updates
 
-Extrovert checks GitHub Releases at startup and every 6 hours, and tells you when a new version is out. You can switch to the **beta** channel in **Settings → Updates** to get new features earlier. The check sends no personal data.
+Extrovert checks GitHub Releases at startup and every 6 hours (or **Settings → Updates → Check for updates**). The check sends no personal data.
+
+- **Windows** and the **Linux AppImage** download the new version in the background and ask you to **Restart now**.
+- **macOS** and **.deb** installs can't replace themselves while Extrovert isn't signed with a paid certificate: you get a notice with a **Download** button for the new installer. Install it over the old one; your workspaces and logins stay.
+- Switch to the **Beta** channel in **Settings → Updates** to get new versions before everyone else.
 
 ---
 
@@ -156,7 +163,7 @@ Free, open source, yours to keep.
 
 - **Import from Ferdium**: Bring your Ferdium services over in one step.
 - **Export and import your setup**: Move your workspaces and settings to another computer as a file.
-- **Updates from GitHub**: New versions install themselves from GitHub Releases. Beta channel available.
+- **Updates from GitHub**: New versions come from GitHub Releases: installed on restart on Windows and Linux, a one-click download on macOS. Beta channel available.
 - **Report a problem**: Fills in a GitHub bug report for you, with app and system details but no personal data. You submit it on GitHub with a free account.
 <!-- /guide:features -->
 
@@ -268,6 +275,7 @@ Google treats a desktop app's client secret as not truly secret (it ships inside
 | `pnpm test` | Unit tests (Vitest) |
 | `pnpm typecheck` | TypeScript checks |
 | `pnpm test:e2e` | End-to-end checks against a real Electron window with a throwaway profile (never touches your logins) |
+| `pnpm dist` | Builds the installers for your system into `release/` (nothing is published) |
 | `pnpm icons` | Renders the app, dock and tray icons in `resources/` from the logo |
 | `pnpm sync-docs` | Rewrites the feature and shortcut lists in this README and on the website from the app |
 
@@ -285,10 +293,21 @@ src/
 tests/e2e/   End-to-end driver and fixture
 resources/   The logo (icon.svg) and the app, dock and tray icons made from it
 docs/        The website (GitHub Pages)
-proto/       The original visual prototype
 ```
 
 **Found a bug?** In the app, click the **⌘** button in the sidebar → **Report a problem**; it fills in the details for you. Or [open a bug report](https://github.com/Pantho-Haque/Extrovert/issues/new?template=bug_report.yml) directly. Either way you need a free GitHub account.
+
+### Publishing a release
+
+Releases are built and published by GitHub Actions ([`release.yml`](.github/workflows/release.yml)):
+
+1. Set the new version in `package.json` (for example `0.2.0`), and tag new features in `src/core/guide/registry.ts` with `added: '0.2.0'` so What's new lists them.
+2. Commit, then tag and push: `git tag v0.2.0 && git push origin main v0.2.0`.
+3. The workflow builds the macOS, Windows and Linux installers, attaches them to a GitHub Release with generated notes, and publishes it. Installed apps pick it up within 6 hours.
+
+A tag with a dash, like `v0.3.0-beta.1`, becomes a pre-release that only the Beta channel receives.
+
+Google sign-in in the released app needs two repository secrets (**Settings → Secrets and variables → Actions**): `MAIN_VITE_GOOGLE_CLIENT_ID` and `MAIN_VITE_GOOGLE_CLIENT_SECRET`. To try a build locally: `pnpm dist` (installers land in `release/`).
 
 ---
 

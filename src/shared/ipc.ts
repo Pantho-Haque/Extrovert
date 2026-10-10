@@ -50,7 +50,8 @@ export interface Runtime {
   feedGuard: { workspaceId: string; instanceId: string; todayMin: number; budgetMin?: number } | null;
   permissionPrompt: PermissionPrompt | null;
   screenPicker: { instanceId: string; sources: ScreenSource[] } | null;
-  update: { version: string; ready: boolean; notes?: string } | null;
+  /** manual: this install can't update itself (macOS, .deb); the user downloads the new installer. */
+  update: { version: string; ready: boolean; manual?: boolean; notes?: string } | null;
   find: { matches: number; active: number } | null;
   toasts: Toast[];
   peek: { workspaceId: string; instanceId: string; image: string } | null;

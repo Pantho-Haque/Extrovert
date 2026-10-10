@@ -932,7 +932,8 @@ export class Extrovert {
 }
 
 /** A file in resources/ (app icons), in development and in the packaged app. */
-export const resource = (name: string): string => join(app.getAppPath(), 'resources', name);
+// Installed builds keep resources/ outside app.asar (electron-builder asarUnpack), where native APIs can read it.
+export const resource = (name: string): string => join(app.getAppPath().replace(/app\.asar$/, 'app.asar.unpacked'), 'resources', name);
 
 export function loadRenderer(wc: Electron.WebContents, hash: string): void {
   if (!app.isPackaged && process.env.ELECTRON_RENDERER_URL) void wc.loadURL(`${process.env.ELECTRON_RENDERER_URL}#${hash}`);

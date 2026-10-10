@@ -1,4 +1,4 @@
-/** The only place platform specifics live (PLANNING.md §7.3). Pure data, no Electron imports. */
+/** The only place platform specifics live. Pure data, no Electron imports. */
 import type { ServiceKind, ServiceType } from '../../shared/types';
 
 export interface ServiceDefinition {

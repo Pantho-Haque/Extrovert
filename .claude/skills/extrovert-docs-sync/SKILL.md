@@ -37,7 +37,6 @@ Check each against the change; fix anything no longer true:
 - **docs/assets/bg.js**: the living background (the app icons as a network, messages travelling, badges popping). Keep its app list in step with the services Extrovert supports.
 - **docs/assets/demo.js**: the interactive replica of the app (sidebar, badges, account menu, ⌘K palette, ⌘J, peek, zen, lock, notifications). When the app's look or a shown behaviour changes, change the demo too; its styles in docs/assets/site.css copy the app's tokens and components from src/renderer/src/styles.css.
 - **COMPETITIVE_ANALYSIS.md**: claims about Extrovert (e.g. Drive sync is still planned, not built).
-- **PLANNING.md** §11b Build status: working / not built yet, test counts.
 - In-app copy that explains the feature (onboarding, empty states, settings descriptions).
 
 ## 3. Verify
@@ -48,8 +47,12 @@ Check each against the change; fix anything no longer true:
 
 Logo A ("The Hello") is the only logo. Master: `resources/icon.svg`. If it changes, also update `Brand` in `src/renderer/src/ui.tsx`, the copies in `docs/` (logo.svg, favicon.svg, the header and `#logo-a` in index.html, `.brand-mark` in site.css), the shapes in `scripts/make-icons.cjs`, then run `pnpm icons`.
 
+## Releases
+
+Installers have stable names (`Extrovert-mac.dmg`, `Extrovert-Setup.exe`, `Extrovert-linux.AppImage`, `Extrovert-linux.deb`; see `electron-builder.yml`). The README, website and `src/main/updates.ts` link to them; rename them everywhere at once. New features in a release get `added: '<version>'` in the registry.
+
 ## Facts to keep straight
 
-- Not built yet (don't claim): Drive sync, tracker blocking, translations, installers/releases pipeline, browser-login import on Windows/Linux and from Firefox/Safari.
+- Not built yet (don't claim): Drive sync, tracker blocking, translations, signed/notarized builds (macOS updates are a manual download), browser-login import on Windows/Linux and from Firefox/Safari.
 - Data folder: macOS `~/Library/Application Support/Extrovert`, Windows `%APPDATA%\Extrovert`, Linux `~/.config/Extrovert`.
 - Repo: https://github.com/Pantho-Haque/Extrovert · site: https://pantho-haque.github.io/Extrovert (GitHub Pages from `docs/`).

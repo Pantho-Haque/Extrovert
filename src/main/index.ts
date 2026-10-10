@@ -2,7 +2,7 @@ import { app } from 'electron';
 import { registerActions } from './actions';
 import { Extrovert } from './app';
 
-// Dev/tests only: a throwaway profile so experiments never touch real logins (PLANNING.md §7.5).
+// Dev/tests only: a throwaway profile so experiments never touch real logins.
 if (!app.isPackaged && process.env.EXTROVERT_PROFILE_DIR) app.setPath('userData', process.env.EXTROVERT_PROFILE_DIR);
 app.setName('Extrovert');
 

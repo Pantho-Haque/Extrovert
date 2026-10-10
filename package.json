@@ -1,11 +1,14 @@
 {
   "name": "extrovert",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "private": true,
   "description": "All your communities. One space.",
   "author": "Pantho Haque",
+  "homepage": "https://pantho-haque.github.io/Extrovert",
+  "repository": "github:Pantho-Haque/Extrovert",
   "license": "MIT",
   "main": "./out/main/index.js",
+  "packageManager": "pnpm@11.17.0",
   "scripts": {
     "dev": "electron-vite dev",
     "build": "electron-vite build",
@@ -13,6 +16,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:e2e": "bash tests/e2e/run.sh",
+    "dist": "electron-vite build && electron-builder --publish never",
     "icons": "electron scripts/make-icons.cjs",
     "sync-docs": "UPDATE_DOCS=1 vitest run src/core/guide"
   },
@@ -23,6 +27,7 @@
     "@types/react-dom": "^19.3.0",
     "@vitejs/plugin-react": "^5.2.0",
     "electron": "^44.7.0",
+    "electron-builder": "^26.15.3",
     "electron-vite": "^5.0.0",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",

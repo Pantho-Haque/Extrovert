@@ -12,6 +12,25 @@
     });
     if (os !== 'mac') document.querySelectorAll('kbd[data-pc]').forEach((k) => { k.textContent = k.dataset.pc; });
   }
+  // Downloads: straight to the installer for each system once a release exists (the files have
+  // stable names); until then, and if GitHub can't be reached, the links stay on the Releases page.
+  const ASSET = { mac: 'Extrovert-mac.dmg', win: 'Extrovert-Setup.exe', linux: 'Extrovert-linux.AppImage' };
+  if (os) document.querySelectorAll('.download').forEach((a) => { a.dataset.asset = ASSET[os]; });
+  fetch('https://api.github.com/repos/Pantho-Haque/Extrovert/releases/latest', { headers: { Accept: 'application/vnd.github+json' } })
+    .then((r) => (r.ok ? r.json() : null))
+    .then((rel) => {
+      if (!rel?.tag_name) return;
+      const names = new Set((rel.assets ?? []).map((x) => x.name));
+      document.querySelectorAll('a[data-asset]').forEach((a) => {
+        if (names.has(a.dataset.asset)) a.href = `https://github.com/Pantho-Haque/Extrovert/releases/latest/download/${a.dataset.asset}`;
+      });
+      const when = new Date(rel.published_at).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' });
+      document.querySelectorAll('.release-line').forEach((el) => {
+        el.innerHTML = `<svg class="ic"><use href="#i-download"/></svg> Version ${rel.tag_name.replace(/^v/, '')} · ${when} · <a href="${rel.html_url}">What's new</a>`;
+        el.hidden = false;
+      });
+    })
+    .catch(() => {});
   document.querySelectorAll('.peek-key').forEach((k) => { k.textContent = os === 'mac' ? '⌥ + hover' : 'Alt + hover'; });
 
   // "Only in Extrovert": every card opens to show a little simulated picture and more detail. The open

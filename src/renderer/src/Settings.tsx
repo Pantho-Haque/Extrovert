@@ -130,8 +130,10 @@ const BODIES: Record<SectionId, (c: Ctx) => ReactNode> = {
 
   updates: ({ snap, set, onOpen }) => (
     <>
-      <Row title="Current version" desc={`Extrovert ${snap.version}${snap.runtime.update ? ` · ${snap.runtime.update.version} ${snap.runtime.update.ready ? 'ready to install' : 'downloading'}` : ''}`}>
-        {snap.runtime.update?.ready ? <button className="btn sm primary" onClick={() => act('installUpdate')}>Restart & update</button> : <button className="btn sm" onClick={() => act('checkUpdates')}>Check for updates</button>}
+      <Row title="Current version" desc={`Extrovert ${snap.version}${snap.runtime.update ? ` · ${snap.runtime.update.version} ${snap.runtime.update.ready ? 'ready to install' : snap.runtime.update.manual ? 'available' : 'downloading'}` : ''}`}>
+        {snap.runtime.update?.ready ? <button className="btn sm primary" onClick={() => act('installUpdate')}>Restart & update</button>
+          : snap.runtime.update?.manual ? <button className="btn sm primary" onClick={() => act('installUpdate')}>Download {snap.runtime.update.version}</button>
+          : <button className="btn sm" onClick={() => act('checkUpdates')}>Check for updates</button>}
       </Row>
       <Row title="Update channel" desc="Beta gets new features earlier.">
         <div className="seg inline">{(['stable', 'beta'] as const).map((c) => <button key={c} className={snap.settings.updates.channel === c ? 'on' : ''} onClick={() => set({ updates: { ...snap.settings.updates, channel: c } })}>{c === 'stable' ? 'Stable' : 'Beta'}</button>)}</div>

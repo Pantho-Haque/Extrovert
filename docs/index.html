@@ -93,7 +93,7 @@
         <a class="btn primary lg download" href="https://github.com/Pantho-Haque/Extrovert/releases/latest"><svg class="ic os-icon"><use href="#i-download"/></svg> <span class="os-label">Download Extrovert</span></a>
         <a class="btn lg" href="#features">See every feature</a>
       </div>
-      <div class="meta"><span><svg class="ic"><use href="#i-shield"/></svg> No account, no server, no tracking</span><span><svg class="ic"><use href="#b-github"/></svg> MIT licensed</span></div>
+      <div class="meta"><span class="release-line" hidden></span><span><svg class="ic"><use href="#i-shield"/></svg> No account, no server, no tracking</span><span><svg class="ic"><use href="#b-github"/></svg> MIT licensed</span></div>
     </div>
 
     <!-- A working replica of the app, simulated in the page (assets/demo.js). -->
@@ -236,7 +236,7 @@
   <ul>
     <li><b>Import from Ferdium</b><span>Bring your Ferdium services over in one step.</span></li>
     <li><b>Export and import your setup</b><span>Move your workspaces and settings to another computer as a file.</span></li>
-    <li><b>Updates from GitHub</b><span>New versions install themselves from GitHub Releases. Beta channel available.</span></li>
+    <li><b>Updates from GitHub</b><span>New versions come from GitHub Releases: installed on restart on Windows and Linux, a one-click download on macOS. Beta channel available.</span></li>
     <li><b>Report a problem</b><span>Fills in a GitHub bug report for you, with app and system details but no personal data. You submit it on GitHub with a free account.</span></li>
   </ul>
 </article>
@@ -366,25 +366,26 @@
       </div>
       <div class="inst-panel" data-os="mac" role="tabpanel">
         <ol class="inst-steps">
-          <li><b>Download</b><span>The <code>.dmg</code> for Apple silicon and Intel.</span><a class="btn primary" href="https://github.com/Pantho-Haque/Extrovert/releases/latest"><svg class="ic"><use href="#i-download"/></svg> Download for macOS</a></li>
+          <li><b>Download</b><span>One <code>.dmg</code> for Apple silicon and Intel Macs, macOS 12 or newer.</span><a class="btn primary" data-asset="Extrovert-mac.dmg" href="https://github.com/Pantho-Haque/Extrovert/releases/latest"><svg class="ic"><use href="#i-download"/></svg> Download for macOS</a></li>
           <li><b>Drag to Applications</b><span>Open the <code>.dmg</code> and drag Extrovert into the Applications folder.</span></li>
           <li><b>Open it the first time</b><span>If macOS says it can't check the app, open <b>System Settings → Privacy &amp; Security</b> and click <b>Open Anyway</b>. Or run this once:</span><code class="inst-cmd">xattr -dr com.apple.quarantine /Applications/Extrovert.app<button class="copy" data-copy="xattr -dr com.apple.quarantine /Applications/Extrovert.app">Copy</button></code></li>
         </ol>
       </div>
       <div class="inst-panel" data-os="win" role="tabpanel" hidden>
         <ol class="inst-steps">
-          <li><b>Download</b><span>The <code>Setup.exe</code> for Windows 10 and 11.</span><a class="btn primary" href="https://github.com/Pantho-Haque/Extrovert/releases/latest"><svg class="ic"><use href="#i-download"/></svg> Download for Windows</a></li>
+          <li><b>Download</b><span>The <code>Setup.exe</code> for Windows 10 and 11 (64-bit).</span><a class="btn primary" data-asset="Extrovert-Setup.exe" href="https://github.com/Pantho-Haque/Extrovert/releases/latest"><svg class="ic"><use href="#i-download"/></svg> Download for Windows</a></li>
           <li><b>Run the installer</b><span>Extrovert installs for your user and opens.</span></li>
           <li><b>If Windows warns you</b><span>On "Windows protected your PC", click <b>More info → Run anyway</b>.</span></li>
         </ol>
       </div>
       <div class="inst-panel" data-os="linux" role="tabpanel" hidden>
         <ol class="inst-steps">
-          <li><b>Download</b><span>The <code>.AppImage</code>; it runs on most distributions.</span><a class="btn primary" href="https://github.com/Pantho-Haque/Extrovert/releases/latest"><svg class="ic"><use href="#i-download"/></svg> Download for Linux</a></li>
-          <li><b>Make it runnable</b><code class="inst-cmd">chmod +x Extrovert-*.AppImage<button class="copy" data-copy="chmod +x Extrovert-*.AppImage">Copy</button></code></li>
+          <li><b>Download</b><span>The <code>.AppImage</code> runs on most distributions and updates itself. On Debian or Ubuntu you can use the <a data-asset="Extrovert-linux.deb" href="https://github.com/Pantho-Haque/Extrovert/releases/latest">.deb</a> instead.</span><a class="btn primary" data-asset="Extrovert-linux.AppImage" href="https://github.com/Pantho-Haque/Extrovert/releases/latest"><svg class="ic"><use href="#i-download"/></svg> Download for Linux</a></li>
+          <li><b>Make it runnable</b><code class="inst-cmd">chmod +x Extrovert-linux.AppImage<button class="copy" data-copy="chmod +x Extrovert-linux.AppImage">Copy</button></code></li>
           <li><b>Open it</b><span>Double-click it. It keeps itself up to date.</span></li>
         </ol>
       </div>
+      <p class="inst-all"><span class="release-line" hidden></span><a href="https://github.com/Pantho-Haque/Extrovert/releases">All releases and release notes</a></p>
       <div class="inst-next">
         <span>Then</span>
         <div><svg class="ic"><use href="#b-google"/></svg> Sign in with Google</div><i></i>
@@ -411,7 +412,7 @@
       <details><summary>Is "Sign in with your browser" safe?</summary><p>It reads the logins of only the services you pick, from the browser and profile you pick, and only after macOS asks for your permission. Nothing is sent anywhere. If a copied login expires, Extrovert copies it again from the same browser; logging out of the service stops that. It works on macOS with Arc, Chrome, Brave, Edge, Vivaldi, Opera and Chromium.</p></details>
       <details><summary>Will I miss notifications?</summary><p>Not if you keep Extrovert running: every service stays live in the background, with badges and native notifications. If a service signs you out, Extrovert tells you right away instead of quietly showing zero.</p></details>
       <details><summary>How much memory does it use?</summary><p>Each service is a full web page, like a browser tab. Extrovert loads them one at a time, puts idle feeds to sleep when memory runs low, and lets you pause whole workspaces. The task manager shows what each service uses.</p></details>
-      <details><summary>How do updates work without a server?</summary><p>New versions are published on GitHub Releases. Extrovert checks there at startup and every 6 hours and tells you when one is ready. The check sends no personal data.</p></details>
+      <details><summary>How do updates work without a server?</summary><p>New versions are published on GitHub Releases. Extrovert checks there at startup and every 6 hours. On Windows and Linux it downloads the update and installs it when you restart; on macOS it gives you a one-click download of the new version. The check sends no personal data.</p></details>
       <details><summary>I found a bug. Where do I report it?</summary><p>In the app: the ⌘ button in the sidebar → Report a problem. It fills in a GitHub issue for you; you need a free GitHub account to submit it. Or <a href="https://github.com/Pantho-Haque/Extrovert/issues/new?template=bug_report.yml">open one here</a>.</p></details>
     </div>
   </div>

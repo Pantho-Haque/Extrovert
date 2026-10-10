@@ -198,7 +198,7 @@ export const FEATURE_GROUPS: FeatureGroup[] = [
     features: [
       { title: 'Import from Ferdium', short: 'Ferdium import', text: 'Bring your Ferdium services over in one step.', where: 'Settings → Import & export' },
       { title: 'Export and import your setup', short: 'Export & import', text: 'Move your workspaces and settings to another computer as a file.', where: 'Settings → Import & export' },
-      { title: 'Updates from GitHub', short: 'Auto updates', text: 'New versions install themselves from GitHub Releases. Beta channel available.', where: 'Settings → Updates' },
+      { title: 'Updates from GitHub', short: 'Auto updates', text: 'New versions come from GitHub Releases: installed on restart on Windows and Linux, a one-click download on macOS. Beta channel available.', where: 'Settings → Updates' },
       { title: 'Report a problem', short: 'Report a problem', text: 'Fills in a GitHub bug report for you, with app and system details but no personal data. You submit it on GitHub with a free account.', where: 'Shortcuts & features (⌘ button in the sidebar), Help menu, or ⌘K' },
     ],
   },
