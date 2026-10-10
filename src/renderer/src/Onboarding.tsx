@@ -65,7 +65,15 @@ export function Onboarding({ snap, onDone, onStart }: { snap: AppSnapshot; onDon
               <span className="g">G</span> {snap.runtime.signingIn ? 'Waiting for your browser…' : 'Continue with Google'}
             </button>
           ) : (
-            <p className="note warn">Google sign-in isn't configured: add <code>MAIN_VITE_GOOGLE_CLIENT_ID</code> and <code>MAIN_VITE_GOOGLE_CLIENT_SECRET</code> to the <code>.env</code> file, then restart.</p>
+            // Developers see how to fix it; anyone else is sent to a build that works.
+            <div className="note warn ob-warn">
+              <Icon name="alert" size={16} />
+              {import.meta.env.DEV ? (
+                <p>Google sign-in isn't configured: add <code>MAIN_VITE_GOOGLE_CLIENT_ID</code> and <code>MAIN_VITE_GOOGLE_CLIENT_SECRET</code> to the <code>.env</code> file, then restart.</p>
+              ) : (
+                <p>Google sign-in isn't available in this copy of Extrovert. <button className="linkish" onClick={() => act('openExternal', { url: 'https://github.com/Pantho-Haque/Extrovert/releases/latest' })}>Download the latest version</button></p>
+              )}
+            </div>
           )}
           {snap.runtime.signingIn && <><small className="muted">A tab opened in your browser. Pick your Google account there.</small><button className="linkish" onClick={() => act('cancelSignIn')}>Cancel</button></>}
           {error && <p className="err">{error}</p>}

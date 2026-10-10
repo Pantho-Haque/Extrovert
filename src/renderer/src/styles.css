@@ -611,3 +611,6 @@ input.field[type="time"] { width: 120px; }
 .look-btn:hover { box-shadow: 0 0 0 2px var(--accent); }
 td.svc-cell > .look-btn { display: inline-block; }
 .look-row td { padding-top: 0; }
+
+.ob-warn { max-width: 520px; text-align: left; }
+.ob-warn p { margin: 0; }

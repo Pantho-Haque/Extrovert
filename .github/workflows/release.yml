@@ -35,6 +35,12 @@ jobs:
         with:
           node-version: 24
           cache: pnpm
+      - name: Google sign-in secrets are set
+        env:
+          ID: ${{ secrets.MAIN_VITE_GOOGLE_CLIENT_ID }}
+          SECRET: ${{ secrets.MAIN_VITE_GOOGLE_CLIENT_SECRET }}
+        run: |
+          [ -n "$ID" ] && [ -n "$SECRET" ] || { echo "::error::Add MAIN_VITE_GOOGLE_CLIENT_ID and MAIN_VITE_GOOGLE_CLIENT_SECRET under Settings → Secrets and variables → Actions. Without them the app can't sign in."; exit 1; }
       - run: pnpm install --frozen-lockfile
       - run: pnpm typecheck
       - run: pnpm test
