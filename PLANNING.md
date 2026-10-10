@@ -13,6 +13,8 @@
 | D5 | Language | TypeScript |
 | D6 | Code quality | Well-organised, modular codebase. Unit tests are mandatory and enforced in CI. |
 | D7 | No AI | Extrovert has no AI features. It is a single space where all your communities live together, nothing more. |
+| D8 | Distribution | GitHub Releases only (no app stores). Install steps live in the README. Source code is **public**. |
+| D9 | Code signing | Not for now. Mac users see a "can't verify developer" warning on first launch (README explains right-click → Open), and Mac updates are manual until signing is added. |
 
 ---
 
@@ -76,7 +78,7 @@ Priorities: **M** = Must (v1), **S** = Should (v1 if time allows), **C** = Could
 | FR-W03 | The user can add more Google accounts from the workspace switcher. | M |
 | FR-W04 | **Account menu (Gmail-style):** the current workspace's avatar sits at the top of the sidebar. Clicking it opens a dropdown with the current account, every other signed-in Google account (each with its unread count and paused/muted state), **Add another account**, and **Sign out of all accounts**. One click on an account switches to it. The avatar's badge shows unread items in the *other* accounts. Shortcut: `Cmd/Ctrl+Shift+1…9`. Adding an account that is already signed in never creates a duplicate. | M |
 | FR-W05 | Each workspace's service sessions are fully isolated: partition `persist:<workspaceId>:<instanceId>`. Facebook in workspace A never sees cookies from workspace B. | M |
-| FR-W06 | Signing out of a Google account removes its workspace. The user chooses whether to keep the local service sessions or wipe them. | M |
+| FR-W06 | Logins belong to their workspace. Signing out of a Google account removes its workspace **and deletes every service login and all data in it** from this computer; signing in again starts it fresh. On startup, any login storage that no longer belongs to a workspace (removed services, older versions) is deleted. | M |
 | FR-W07 | Google tokens are stored encrypted with the OS keychain (Electron `safeStorage`), never in plain JSON. | M |
 | FR-W08 | **Config sync via the user's own Google Drive** (`drive.appdata` hidden app folder): service list, order, and settings follow the user to another machine. No Extrovert server is involved. | S |
 | FR-W09 | Rename a workspace and give it a color (useful when two accounts share an avatar). | S |
@@ -361,6 +363,38 @@ signs, uploads                     ├─ Extrovert-1.2.0.dmg               1.2.
 - **Privacy:** the update check is a plain file download from GitHub. It sends no user data, though GitHub sees the user's IP address like any download. This is stated in Privacy settings.
 - **Fallback:** if we ever leave GitHub, `electron-updater`'s `generic` provider works with any static file host (Cloudflare R2, S3, GitHub Pages) with no code changes beyond the config.
 
+### 7.5 Configuration & environment variables
+
+**End users configure nothing.** No env vars and no config files are needed to run Extrovert. Everything below is for developers and CI.
+
+**Build-time env vars** (`.env` locally, CI secrets in GitHub; `.env` is git-ignored and `.env.example` is committed):
+
+| Variable | Used for | Notes |
+|---|---|---|
+| `MAIN_VITE_GOOGLE_CLIENT_ID` | Google sign-in (FR-W01) | OAuth client of type **Desktop app** in Google Cloud Console. Read only in the main process. |
+| `MAIN_VITE_GOOGLE_CLIENT_SECRET` | Google token exchange | Google still requires it for Desktop clients, but it ships inside the app and **is not truly secret**. Security comes from PKCE + loopback redirect. Kept out of git anyway. |
+| `GH_TOKEN` | Publishing releases (CI only) | Lets electron-builder upload to the public releases repo. |
+| `CSC_LINK`, `CSC_KEY_PASSWORD` | macOS code signing (CI only) | Developer ID certificate. |
+| `APPLE_ID`, `APPLE_APP_SPECIFIC_PASSWORD`, `APPLE_TEAM_ID` | macOS notarization (CI only) | Required for auto-update on macOS. |
+| `WIN_CSC_LINK`, `WIN_CSC_KEY_PASSWORD` | Windows code signing (CI only) | Removes SmartScreen warnings. |
+| `EXTROVERT_PROFILE_DIR` | Dev/tests only | Points the app at a throwaway data folder, so E2E tests never touch real logins. Ignored in packaged builds. |
+
+**Google Cloud setup (one time):** create a project → OAuth consent screen (External; scopes `openid email profile`, which are non-sensitive and need no Google verification) → create a **Desktop app** OAuth client. Desktop clients accept any `http://127.0.0.1:<port>` loopback redirect, so there is nothing to register. While the consent screen is in *Testing* mode, only listed test users can sign in and their sign-ins expire after 7 days, so switch it to *In production* before release. Adding `drive.appdata` for sync (FR-W08) means re-checking the consent screen at that point.
+
+**Configuration in code** (reviewed in PRs, covered by unit tests):
+
+| File | Controls |
+|---|---|
+| `src/core/services/catalog.ts` | Every built-in service: URL, domains, unread rule, login-page patterns, kind (feed/chat/mail). |
+| `src/core/settings/defaults.ts` + `schema.ts` | Default value and validation for every user setting (DND, digest interval, budgets, retention…), plus versioned migrations. |
+| `src/shared/config.ts` | App constants: user-agent string, update check interval (6 h), idle threshold (60 s), memory-pressure threshold, startup load order. |
+| `src/shared/features.ts` | Feature flags for "Could"/beta features (people view, proxy, tracker blocking). Enabled automatically on the beta channel. |
+| `electron-builder.yml` | App ID, product name, icons, signing, update feed (GitHub owner/repo). |
+
+**Runtime user settings** live in `electron-store` and are only changed through the Settings UI, always validated against the schema. Tokens are stored separately with `safeStorage`.
+
+Not planned: remote config downloaded at runtime. Catalog fixes (e.g. a changed Messenger URL) ship as a normal update, which keeps the "no server" promise.
+
 ## 8. Code Organisation & Modularity
 
 ### 8.1 Principles
@@ -467,6 +501,20 @@ See [COMPETITIVE_ANALYSIS.md](COMPETITIVE_ANALYSIS.md), the publishable comparis
 | **6. Polish** | Command palette, context menu, zoom, DND, hibernation, suspended workspaces, badge health, Drive sync, a11y pass | "S" items done, UX review |
 | **7. Signature & market features** | FR-X01, X02, X16, X17, X30 (the M items) land in earlier phases. This phase covers the rest: attention (snooze, VIP, digest, recap), flow (peek, call bubble), privacy (media indicator, share shield, blur), wellbeing (time insights, feed guard), performance (smart hibernation, task manager, no autoplay), productivity (smart links, pins, saved replies, zen mode, tray view, downloads), trust (Ferdium import, permissions dashboard), growth (what's new, beta channel) | All FR-X "S" items pass, with each rule engine at ≥ 90 % coverage in `core` |
 | **8. Ship** | Signed builds for all 3 OSes, notarization, auto-update | v1.0.0 → v1.0.1 auto-update works on each OS |
+
+---
+
+## 11b. Build status (2026-10-10)
+
+The app is built end to end in `src/` and runs with `pnpm dev`. Checks: `pnpm test` (118 unit tests), `pnpm typecheck`, `pnpm test:e2e` (29 end-to-end checks against a real Electron instance with a local fixture service).
+
+**Working:** Google sign-in (system browser, PKCE) · one workspace per Google account with the Gmail-style account menu · logins isolated per workspace, shared where a platform shares them (one Google sign-in for Gmail, Calendar, Drive, Meet and Chat; one Meta login for Facebook and Messenger; a second account of an app keeps its own) · add several services at once · Google apps always open as the workspace's own Google account (a browser can hold several) · grouped multi-account services with tags · outline brand icons from the Tabler icon pack (instant, offline; custom websites use their own site icon) · unread badges from page titles, per workspace and on the dock/tray · the services' own notifications shown natively with previews, history, VIPs, DND, digest, work hours, snooze that reopens the exact chat, away recap, people view · sign-in detection from each platform's own login cookie, with the login watchdog and a "Sign in with <your browser>" offer on signed-out services · smart link routing, pins, saved replies, find, zoom, zen, command palette · peek · call bubble, camera/mic/screen indicators, screen picker, screen-share shield · permission prompts and dashboard · lock with PIN/Touch ID and panic key · time insights and feed guard · staggered startup, auto-recover, smart hibernation, task manager · downloads · tray mini view · Ferdium import, config export/import, sign in with your browser (macOS) · updates from GitHub Releases · onboarding.
+
+**Changed from the plan:** plain CSS ported from the approved prototype instead of Tailwind; small JSON files (atomic writes) instead of electron-store, which is ESM-only.
+
+**Not built yet:** Drive sync (FR-W08) · tracker blocking (FR-X29) · translation files (FR-X30: strings are still in components) · ESLint/Prettier and the CI pipeline (Phase 1) · installers via electron-builder (Phase 8) · browser-login import on Windows/Linux and from Firefox/Safari · notifications a service sends from its service worker while its page is closed.
+
+**Known limits:** Tabler has no brand outline for Google Calendar, Meet or Chat, so those use matching outline icons (calendar, video, chat bubbles) in their Google colors.
 
 ---
 

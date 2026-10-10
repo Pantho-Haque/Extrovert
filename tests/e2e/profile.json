@@ -1,0 +1,11 @@
+{"version":1,"activeWorkspaceId":"w-test","workspaces":[
+ {"id":"w-test","googleSub":"t1","name":"Personal","email":"test@example.com","color":"#4F46E5","suspended":false,
+  "workHours":{"enabled":false,"days":[1,2,3,4,5],"start":"09:00","end":"18:00"},"activeInstanceId":"i-fix",
+  "instances":[
+   {"id":"i-fix","type":"custom","label":"Fixture","url":"http://127.0.0.1:8765/","enabled":true,"muted":false,"alerts":true,"sound":false,"badge":true,"autoplay":true,"zoom":100,"permissions":{}},
+   {"id":"i-wa","type":"whatsapp","enabled":true,"muted":false,"alerts":true,"sound":false,"badge":true,"autoplay":true,"zoom":100,"permissions":{}},
+   {"id":"i-wb","type":"whatsapp","label":"WhatsApp · Business","enabled":true,"muted":false,"alerts":true,"sound":false,"badge":true,"autoplay":true,"zoom":100,"permissions":{}},
+   {"id":"i-gm","type":"gmail","enabled":true,"muted":false,"alerts":true,"sound":false,"badge":true,"autoplay":true,"zoom":100,"permissions":{}}]},
+ {"id":"w-work","googleSub":"t2","name":"Work","email":"work@example.com","color":"#0EA5E9","suspended":false,
+  "workHours":{"enabled":false,"days":[1,2,3,4,5],"start":"09:00","end":"18:00"},
+  "instances":[{"id":"i-li","type":"linkedin","enabled":true,"muted":false,"alerts":true,"sound":false,"badge":true,"autoplay":false,"zoom":100,"permissions":{}}]}]}

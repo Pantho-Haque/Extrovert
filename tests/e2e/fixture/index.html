@@ -1,0 +1,16 @@
+<!doctype html><meta charset="utf-8"><title>Fixture</title>
+<link rel="icon" href="data:,">
+<body style="font:16px sans-serif;padding:40px;background:#fff">
+<h1>Fixture service</h1>
+<p id="log">loading…</p>
+<a href="https://www.instagram.com/nadia.clicks" target="_blank">Instagram link (opens in a new window)</a>
+<script>
+const log = (t) => (document.getElementById('log').textContent = t);
+let clicked = 0;
+setTimeout(() => { document.title = '(3) Fixture'; log('title set to (3)'); }, 1500);
+setTimeout(() => {
+  log('permission=' + Notification.permission);
+  const n = new Notification('Rahim', { body: 'Hello from the fixture page' });
+  n.onclick = () => { clicked++; document.title = '(0) Fixture clicked ' + clicked; log('notification clicked'); };
+}, 3000);
+</script>
