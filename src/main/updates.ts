@@ -15,7 +15,7 @@ const RELEASES = `${REPO}/releases`;
 const SIX_HOURS = 6 * 3_600_000;
 
 /** Installs that can't update themselves, and the installer they should download instead. */
-const MANUAL_ASSET = process.platform === 'darwin' ? 'Extrovert-mac.dmg' : process.platform === 'linux' && !process.env.APPIMAGE ? 'Extrovert-linux.deb' : null;
+const MANUAL_ASSET = process.platform === 'darwin' ? `Extrovert-mac-${process.arch === 'arm64' ? 'arm64' : 'x64'}.dmg` : process.platform === 'linux' && !process.env.APPIMAGE ? 'Extrovert-linux.deb' : null;
 export const downloadUrl = (version: string): string => (MANUAL_ASSET ? `${RELEASES}/download/v${version}/${MANUAL_ASSET}` : `${RELEASES}/tag/v${version}`);
 
 export class Updates {

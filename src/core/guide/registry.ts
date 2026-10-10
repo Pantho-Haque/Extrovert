@@ -36,7 +36,6 @@ export const SHORTCUTS = [
   { id: 'zen', keys: 'CmdOrCtrl+\\', label: 'Zen mode (hide the sidebar)', group: 'Window' },
   { id: 'guide', keys: 'CmdOrCtrl+/', label: 'Shortcuts & features', group: 'Window' },
   { id: 'settings', keys: 'CmdOrCtrl+,', label: 'Settings', group: 'Window' },
-  { id: 'devtools', keys: 'Alt+CmdOrCtrl+I', label: 'Developer tools for the service', group: 'Window' },
 ] as const satisfies readonly Shortcut[];
 
 export type ShortcutId = (typeof SHORTCUTS)[number]['id'];
@@ -125,7 +124,7 @@ export const FEATURE_GROUPS: FeatureGroup[] = [
     icon: 'bell',
     features: [
       { title: 'Live unread badges', short: 'Live badges', text: 'On every service, every account, and the dock or tray.' },
-      { title: 'Notifications with previews', short: 'Rich notifications', text: "Each service's own notifications, shown natively, with a full history.", shortcut: 'notifications' },
+      { title: 'Notifications with previews', short: 'Rich notifications', text: "Each service's own notifications, as a banner inside Extrovert while you use it and from your system otherwise, once per message, with a full history.", shortcut: 'notifications' },
       { unique: true, icon: 'zap', title: 'Next unread', short: 'Next unread', text: 'Jump to the next service with something new, across all accounts, until you reach inbox zero.', shortcut: 'nextUnread', details: 'Extrovert keeps one list of everything unread, across every app and every account. Each press takes you to the next one; when nothing is left, it tells you you\'re at inbox zero.' },
       { unique: true, icon: 'msg', title: 'People view', short: 'People view', text: 'See who is waiting on you, grouped by person across platforms.', where: 'Notifications → People', details: 'Notifications are grouped by who sent them, not by app, so Rahim\'s two WhatsApp messages and his LinkedIn message sit together. If someone uses different names on different platforms, link them once.' },
       { unique: true, icon: 'star', title: 'VIPs', short: 'VIPs', text: 'Messages from your VIPs break through Do Not Disturb and digests.', where: 'Settings → Notifications', details: 'Mark someone as a VIP from one of their notifications or in Settings. Their messages still reach you when Do Not Disturb is on or notifications are bundled into a digest, on every app.' },

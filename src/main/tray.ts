@@ -1,6 +1,6 @@
 /** Menu-bar / tray icon with a mini view of unread counts and recent notifications (FR-X25). */
 import { join } from 'node:path';
-import { BrowserWindow, Menu, nativeImage, screen, Tray } from 'electron';
+import { app as electronApp, BrowserWindow, Menu, nativeImage, screen, Tray } from 'electron';
 import { loadRenderer, resource, type Extrovert } from './app';
 
 const W = 340;
@@ -58,7 +58,7 @@ export class TrayUI {
     const win = new BrowserWindow({
       width: W, height: H, show: false, frame: false, resizable: false, movable: false, skipTaskbar: true,
       alwaysOnTop: true, fullscreenable: false, transparent: true, backgroundColor: '#00000000',
-      webPreferences: { preload: join(__dirname, '../preload/shell.js'), sandbox: true, contextIsolation: true },
+      webPreferences: { preload: join(__dirname, '../preload/shell.js'), sandbox: true, contextIsolation: true, devTools: !electronApp.isPackaged },
     });
     win.on('blur', () => win.hide());
     loadRenderer(win.webContents, 'tray');

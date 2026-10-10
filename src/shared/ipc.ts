@@ -22,6 +22,17 @@ export interface Toast {
   persistent?: boolean;
 }
 
+/** A notification shown inside Extrovert while you're using it (macOS shows no banners for the front app). */
+export interface Banner {
+  /** The notification's history id: clicking opens that chat. */
+  id: string;
+  instanceId: string;
+  sender: string;
+  body: string;
+  where: string;
+  vip: boolean;
+}
+
 export interface PermissionPrompt {
   id: string;
   workspaceId: string;
@@ -54,6 +65,7 @@ export interface Runtime {
   update: { version: string; ready: boolean; manual?: boolean; notes?: string } | null;
   find: { matches: number; active: number } | null;
   toasts: Toast[];
+  banners: Banner[];
   peek: { workspaceId: string; instanceId: string; image: string } | null;
   /** Blurred snapshot shown behind the lock screen. */
   lockImage: string | null;
@@ -158,6 +170,9 @@ export interface Actions {
   checkUpdates: [void, void];
   installUpdate: [void, void];
   systemInfo: [void, string];
+  dismissBanner: [{ id: string }, void];
+  /** macOS: the Privacy & Security pane for the camera or microphone. */
+  openPrivacySettings: [{ device: 'camera' | 'microphone' }, void];
   /** A website's own icon, for the Add services preview. */
   siteIcon: [{ url: string }, string | null];
   reportProblem: [{ title: string; details: string; severity: Severity; where: string }, void];
@@ -172,7 +187,7 @@ export interface Actions {
   resizeFloating: [{ name: FloatingName; width: number; height: number }, void];
 }
 
-export type FloatingName = 'toasts' | 'find' | 'peek';
+export type FloatingName = 'toasts' | 'find' | 'peek' | 'banners';
 
 export type ActionName = keyof Actions;
 export type ActionPayload<K extends ActionName> = Actions[K][0];

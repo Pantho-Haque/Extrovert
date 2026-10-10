@@ -6,7 +6,7 @@
 import { randomUUID } from 'node:crypto';
 import { existsSync } from 'node:fs';
 import { basename, extname, join } from 'node:path';
-import { app as electronApp, BaseWindow, desktopCapturer, ipcMain, screen, session, webContents } from 'electron';
+import { app as electronApp, BaseWindow, desktopCapturer, ipcMain, screen, session, systemPreferences, webContents } from 'electron';
 import { instanceName, partitionFor } from '../core/workspaces/model';
 import type { DevicePermission, Instance, MediaKind, Workspace } from '../shared/types';
 import type { Extrovert } from './app';
@@ -34,7 +34,8 @@ export class Media {
       if (permission === 'media') {
         const types = (details as Electron.MediaAccessPermissionRequest).mediaTypes ?? [];
         const wanted: DevicePermission[] = [...(types.includes('video') ? ['camera' as const] : []), ...(types.includes('audio') ? ['microphone' as const] : [])];
-        return void this.ask(id, wanted.length ? wanted : ['microphone']).then(callback);
+        const devices = wanted.length ? wanted : ['microphone' as const];
+        return void this.ask(id, devices).then(async (allow) => callback(allow && (await this.systemAccess(id, devices))));
       }
       if (permission === 'geolocation') return void this.ask(id, ['location']).then(callback);
       callback(false);
@@ -43,7 +44,9 @@ export class Media {
       const id = who(wc);
       if (permission === 'notifications' || permission === 'clipboard-sanitized-write' || permission === 'fullscreen') return true;
       const perms = this.app.store.locate(id)?.inst.permissions ?? {};
-      if (permission === 'media') return (details as { mediaType?: string }).mediaType === 'video' ? !!perms.camera : !!perms.microphone;
+      // Only a "Block" counts as denied. Not asked yet must not look denied, or sites like Meet show
+      // "blocked" and never ask; when they do ask, Extrovert's own prompt appears.
+      if (permission === 'media') return (details as { mediaType?: string }).mediaType === 'video' ? perms.camera !== false : perms.microphone !== false;
       if (permission === 'geolocation') return !!perms.location;
       return false;
     });
@@ -84,6 +87,27 @@ export class Media {
         resolve(allow);
       });
     });
+  }
+
+  /**
+   * macOS also has to allow Extrovert itself to use the camera and microphone (it asks once). If it
+   * was refused there, say where to turn it on instead of failing silently.
+   */
+  private async systemAccess(instanceId: string, devices: DevicePermission[]): Promise<boolean> {
+    if (process.platform !== 'darwin') return true;
+    for (const d of devices) {
+      if (d === 'location') continue;
+      const kind = d === 'camera' ? 'camera' : 'microphone';
+      if (systemPreferences.getMediaAccessStatus(kind) === 'granted') continue;
+      if (await systemPreferences.askForMediaAccess(kind)) continue;
+      const loc = this.app.store.locate(instanceId);
+      this.app.toast(`macOS isn't letting Extrovert use your ${kind}${loc ? ` for ${instanceName(loc.inst)}` : ''}. Turn it on in System Settings → Privacy & Security → ${kind === 'camera' ? 'Camera' : 'Microphone'}, then try again.`, {
+        persistent: true,
+        actions: [{ label: 'Open settings', action: 'openPrivacySettings', payload: { device: kind } }],
+      });
+      return false;
+    }
+    return true;
   }
 
   answerPermission(id: string, allow: boolean): void {

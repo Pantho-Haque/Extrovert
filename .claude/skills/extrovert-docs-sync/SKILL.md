@@ -49,7 +49,7 @@ Logo A ("The Hello") is the only logo. Master: `resources/icon.svg`. If it chang
 
 ## Releases
 
-Installers have stable names (`Extrovert-mac.dmg`, `Extrovert-Setup.exe`, `Extrovert-linux.AppImage`, `Extrovert-linux.deb`; see `electron-builder.yml`). The README, website and `src/main/updates.ts` link to them; rename them everywhere at once. New features in a release get `added: '<version>'` in the registry.
+Installers have stable names (`Extrovert-mac-arm64.dmg`, `Extrovert-mac-x64.dmg`, `Extrovert-Setup.exe`, `Extrovert-linux.AppImage`, `Extrovert-linux.deb`; see `electron-builder.yml`). The README, website and `src/main/updates.ts` link to them; rename them everywhere at once. New features in a release get `added: '<version>'` in the registry.
 
 ## Facts to keep straight
 

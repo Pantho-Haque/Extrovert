@@ -1,7 +1,7 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { useSnapshot, useTheme } from './lib';
-import { FindPanel, PeekPanel, ToastsPanel, TrayPanel } from './Panels';
+import { BannersPanel, FindPanel, PeekPanel, ToastsPanel, TrayPanel } from './Panels';
 import { Shell } from './Shell';
 import './styles.css';
 
@@ -14,6 +14,7 @@ function Root() {
   if (!snap) return null;
   switch (surface) {
     case 'toasts': return <ToastsPanel snap={snap} />;
+    case 'banners': return <BannersPanel snap={snap} />;
     case 'find': return <FindPanel snap={snap} />;
     case 'peek': return <PeekPanel snap={snap} />;
     case 'tray': return <TrayPanel snap={snap} />;

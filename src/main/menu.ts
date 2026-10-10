@@ -2,7 +2,7 @@
  * App menu with every keyboard shortcut (FR-N04 and friends). Menu accelerators work even while a
  * service page has focus. The Edit roles are what make copy/paste work inside services on macOS.
  */
-import { Menu, type MenuItemConstructorOptions } from 'electron';
+import { app as electronApp, Menu, type MenuItemConstructorOptions } from 'electron';
 import { accel } from '../core/guide/registry';
 import { instanceName, orderedInstances } from '../core/workspaces/model';
 import type { Extrovert } from './app';
@@ -69,7 +69,8 @@ export function buildMenu(app: Extrovert): void {
         { label: 'Zoom Out', accelerator: accel('zoomOut'), click: withActive((id) => app.setZoom(id, -10)) },
         { label: 'Actual Size', accelerator: accel('zoomReset'), click: withActive((id) => app.setZoom(id, 0)) },
         { type: 'separator' },
-        { label: 'Service Developer Tools', accelerator: accel('devtools'), click: withActive((id) => app.views.webContents(id)?.openDevTools({ mode: 'detach' })) },
+        // Only when running from source: released builds have no developer tools at all.
+        ...(electronApp.isPackaged ? [] : [{ label: 'Service Developer Tools', accelerator: 'Alt+CmdOrCtrl+I', click: withActive((id) => app.views.webContents(id)?.openDevTools({ mode: 'detach' })) }]),
         { role: 'togglefullscreen' },
       ],
     },

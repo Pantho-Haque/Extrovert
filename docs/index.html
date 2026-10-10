@@ -93,6 +93,7 @@
         <a class="btn primary lg download" href="https://github.com/Pantho-Haque/Extrovert/releases/latest"><svg class="ic os-icon"><use href="#i-download"/></svg> <span class="os-label">Download Extrovert</span></a>
         <a class="btn lg" href="#features">See every feature</a>
       </div>
+      <p class="alt-dl" hidden><a data-asset href="https://github.com/Pantho-Haque/Extrovert/releases/latest"></a></p>
       <div class="meta"><span class="release-line" hidden></span><span><svg class="ic"><use href="#i-shield"/></svg> No account, no server, no tracking</span><span><svg class="ic"><use href="#b-github"/></svg> MIT licensed</span></div>
     </div>
 
@@ -173,7 +174,7 @@
   <p class="tagline">Live badges and real notifications, minus the noise.</p>
   <ul>
     <li><b>Live unread badges</b><span>On every service, every account, and the dock or tray.</span></li>
-    <li><b>Notifications with previews</b> <kbd class="k" data-pc="Ctrl+Shift+N">⌘⇧N</kbd><span>Each service's own notifications, shown natively, with a full history.</span></li>
+    <li><b>Notifications with previews</b> <kbd class="k" data-pc="Ctrl+Shift+N">⌘⇧N</kbd><span>Each service's own notifications, as a banner inside Extrovert while you use it and from your system otherwise, once per message, with a full history.</span></li>
     <li><b>Next unread</b> <kbd class="k" data-pc="Ctrl+J">⌘J</kbd><span>Jump to the next service with something new, across all accounts, until you reach inbox zero.</span></li>
     <li><b>People view</b><span>See who is waiting on you, grouped by person across platforms.</span></li>
     <li><b>VIPs</b><span>Messages from your VIPs break through Do Not Disturb and digests.</span></li>
@@ -347,7 +348,6 @@
 <button class="kbind" data-keys="CmdOrCtrl+\"><span>Zen mode (hide the sidebar)</span><kbd data-mac="⌘\" data-pc="Ctrl+\">⌘\</kbd></button>
 <button class="kbind" data-keys="CmdOrCtrl+/"><span>Shortcuts &amp; features</span><kbd data-mac="⌘/" data-pc="Ctrl+/">⌘/</kbd></button>
 <button class="kbind" data-keys="CmdOrCtrl+,"><span>Settings</span><kbd data-mac="⌘," data-pc="Ctrl+,">⌘,</kbd></button>
-<button class="kbind" data-keys="Alt+CmdOrCtrl+I"><span>Developer tools for the service</span><kbd data-mac="⌥⌘I" data-pc="Alt+Ctrl+I">⌥⌘I</kbd></button>
 </div>
 <!-- /guide:shortcuts -->
       </div>
@@ -366,7 +366,7 @@
       </div>
       <div class="inst-panel" data-os="mac" role="tabpanel">
         <ol class="inst-steps">
-          <li><b>Download</b><span>One <code>.dmg</code> for Apple silicon and Intel Macs, macOS 12 or newer.</span><a class="btn primary" data-asset="Extrovert-mac.dmg" href="https://github.com/Pantho-Haque/Extrovert/releases/latest"><svg class="ic"><use href="#i-download"/></svg> Download for macOS</a></li>
+          <li><b>Download</b><span>For macOS 12 or newer. Not sure which Mac you have? Apple menu → <b>About This Mac</b>: "Apple M…" is Apple silicon.</span><span class="dl-pair"><a class="btn primary" data-asset="Extrovert-mac-arm64.dmg" href="https://github.com/Pantho-Haque/Extrovert/releases/latest"><svg class="ic"><use href="#i-download"/></svg> Apple silicon</a><a class="btn" data-asset="Extrovert-mac-x64.dmg" href="https://github.com/Pantho-Haque/Extrovert/releases/latest">Intel</a></span></li>
           <li><b>Drag to Applications</b><span>Open the <code>.dmg</code> and drag Extrovert into the Applications folder.</span></li>
           <li><b>Open it the first time</b><span>If macOS says it can't check the app, open <b>System Settings → Privacy &amp; Security</b> and click <b>Open Anyway</b>. Or run this once:</span><code class="inst-cmd">xattr -dr com.apple.quarantine /Applications/Extrovert.app<button class="copy" data-copy="xattr -dr com.apple.quarantine /Applications/Extrovert.app">Copy</button></code></li>
         </ol>

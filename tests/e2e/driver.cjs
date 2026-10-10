@@ -151,7 +151,7 @@ module.exports = async (x) => {
         return page().getURL().endsWith('#a');
       });
       await check('forward', async () => { press(keysOf.forward); await wait(500); return page().getURL().endsWith('#b'); });
-      await check('devtools', async () => { press(keysOf.devtools); await wait(1500); const ok = page().isDevToolsOpened(); page().closeDevTools(); await wait(300); return ok; });
+      await check('devtools-from-source-only', async () => { press('Alt+CmdOrCtrl+I'); await wait(1500); const ok = page().isDevToolsOpened(); page().closeDevTools(); await wait(300); return ok; });
       await check('service', async () => {
         press('CmdOrCtrl+2'); await wait(500); const moved = x.activeInstance()?.id !== 'i-fix';
         press('CmdOrCtrl+1'); await wait(500); return moved && x.activeInstance()?.id === 'i-fix';
@@ -175,6 +175,317 @@ module.exports = async (x) => {
       const failed = Object.entries(results).filter(([, v]) => v !== true);
       step('shortcuts', { menuItems: items.length, clashes, missing, tested: Object.keys(results).length, failed });
       if (clashes.length || missing.length || failed.length) step('shortcuts-failed', {});
+    });
+
+    // Camera/mic not decided yet must not look "blocked" to the page (Meet showed "blocked" and never asked).
+    await safe('media-check', async () => {
+      const page = x.views.webContents('i-fix');
+      const states = await page.executeJavaScript(`Promise.all(['microphone', 'camera'].map((name) => navigator.permissions.query({ name }).then((p) => p.state)))`);
+      step('media-not-blocked-before-asking', { states });
+      if (states.includes('denied')) step('media-check-failed', {});
+    });
+
+    // Calls open a blank window first, then load the call into it (Messenger): it must be allowed,
+    // belong to the service, and use its login.
+    await safe('call-popup', async () => {
+      const { BrowserWindow } = require('electron');
+      const before = BrowserWindow.getAllWindows().length;
+      const page = x.views.webContents('i-fix');
+      await page.executeJavaScript(`window.__call = window.open('', 'call', 'width=600,height=400'); window.__call.location = 'http://127.0.0.1:8765/site.html'; true`, true);
+      await wait(1500);
+      const popup = BrowserWindow.getAllWindows().find((w) => w.webContents.getURL().includes('site.html'));
+      const mapped = popup ? x.views.instanceFor(popup.webContents) : null;
+      step('call-window-opens', { opened: !!popup, belongsTo: mapped, windows: BrowserWindow.getAllWindows().length - before });
+      if (!(popup && mapped === 'i-fix')) step('call-window-failed', {});
+      popup?.close();
+      await wait(300);
+    });
+
+    // Facebook flashes its title ("Rahim sent you a message") until the message is read: the badge
+    // must not drop, the flash becomes ONE notification (not one per flash, nor an extra "1 new
+    // message"), and while Extrovert is in front it appears as a banner inside the app.
+    await safe('title-flash', async () => {
+      x.selectInstance('w-test', 'i-wa'); await wait(400);
+      const page = x.views.webContents('i-fix');
+      const realFocus = x.win.isFocused;
+      x.win.isFocused = () => true; // as if you were using Extrovert, on another service
+      const historyBefore = x.store.history.length;
+      let bannerSeen = null;
+      try {
+        await page.executeJavaScript(`document.title = '(3) Fixture'`); await wait(300);
+        for (let k = 0; k < 4; k++) {
+          await page.executeJavaScript(`document.title = 'Rahim Ahmed sent you a message'`); await wait(500);
+          await page.executeJavaScript(`document.title = '(${k === 3 ? 4 : 3}) Fixture'`); await wait(500);
+          bannerSeen ??= x.store.runtime.banners.find((b) => b.sender === 'Rahim Ahmed') ?? null;
+        }
+        const during = x.store.statuses['i-fix'].unread;
+        await wait(4500);
+        bannerSeen ??= x.store.runtime.banners.find((b) => b.sender === 'Rahim Ahmed') ?? null;
+        await png(x.floating.webContents()[3], 'banner');
+        const added = x.store.history.slice(0, x.store.history.length - historyBefore).filter((n) => n.instanceId === 'i-fix');
+        step('title-flash', { badgeDuringFlash: during, notifications: added.map((n) => `${n.sender}: ${n.body}`), banner: bannerSeen?.sender ?? null });
+        if (!(during >= 3 && added.length === 1 && added[0].sender === 'Rahim Ahmed' && bannerSeen)) step('title-flash-failed', {});
+      } finally {
+        x.win.isFocused = realFocus;
+      }
+      for (const b of [...x.store.runtime.banners]) x.notifier.dismissBanner(b.id);
+      x.selectInstance('w-test', 'i-fix'); await wait(300);
+    });
+
+    // ------------------------------------------------------------------ the features that had no test yet
+    const fixWc = () => x.views.webContents('i-fix');
+    const check = async (name, fn) => {
+      try {
+        const r = await fn();
+        step(name, r);
+        if (!r.ok) step(`${name}-failed`, {});
+      } catch (e) { step(`${name}-error`, { e: String(e) }); }
+    };
+    const asIfFocused = async (fn) => { const real = x.win.isFocused; x.win.isFocused = () => true; try { return await fn(); } finally { x.win.isFocused = real; } };
+    const fromPage = (title, body) => fixWc().executeJavaScript(`new Notification(${JSON.stringify(title)}, { body: ${JSON.stringify(body)} }); true`);
+    const clearBanners = () => { for (const b of [...x.store.runtime.banners]) x.notifier.dismissBanner(b.id); };
+
+    // Notification click, service-worker style: opens the conversation address the site gave.
+    await check('notification-opens-chat-link', async () => {
+      x.selectInstance('w-test', 'i-wa'); await wait(300);
+      await fixWc().executeJavaScript(`ServiceWorkerRegistration.prototype.showNotification.call({}, 'Sara', { body: 'see this', data: { url: '/site.html?chat=sara' } }); true`);
+      await wait(500);
+      const n = x.store.history.find((h) => h.sender === 'Sara');
+      x.notifier.open(n.id); await wait(1500);
+      return { ok: fixWc().getURL().endsWith('site.html?chat=sara') && x.activeInstance()?.id === 'i-fix', url: fixWc().getURL(), kept: n.url };
+    });
+    await fixWc().loadURL('http://127.0.0.1:8765/'); await wait(1200);
+
+    // Pause a workspace: its services stop; resuming brings them back.
+    await check('pause-workspace', async () => {
+      x.updateWorkspace('w-work', { suspended: true }); await wait(800);
+      const paused = !x.views.has('i-li');
+      x.updateWorkspace('w-work', { suspended: false }); x.selectWorkspace('w-work'); await wait(2500);
+      const back = x.views.has('i-li');
+      x.selectWorkspace('w-test'); x.selectInstance('w-test', 'i-fix'); await wait(800);
+      return { ok: paused && back, stoppedWhilePaused: paused, runningAfterResume: back };
+    });
+
+    // Work hours: outside them, notifications are kept quiet (history yes, banner no).
+    await check('work-hours', async () => {
+      const ws = x.store.workspace('w-test');
+      const saved = ws.workHours;
+      ws.workHours = { enabled: true, days: [], start: '09:00', end: '17:00' }; // no working days: always outside
+      x.minuteTick();
+      clearBanners();
+      await asIfFocused(async () => { x.selectInstance('w-test', 'i-wa'); await fromPage('Boss', 'late email'); await wait(700); });
+      const quiet = !x.store.runtime.banners.some((b) => b.sender === 'Boss') && x.store.history.some((h) => h.sender === 'Boss');
+      ws.workHours = saved; x.minuteTick();
+      return { ok: quiet && x.store.runtime.outsideHours['w-test'] === false, outside: true, quietButKept: quiet };
+    });
+
+    // VIPs get through Do Not Disturb; others don't.
+    await check('vip-through-dnd', async () => {
+      x.updateSettings({ dnd: true, vips: ['Ammu'] });
+      clearBanners();
+      await asIfFocused(async () => { await fromPage('Ammu', 'call me'); await fromPage('Random', 'hi'); await wait(800); });
+      const vip = x.store.runtime.banners.find((b) => b.sender === 'Ammu');
+      const other = x.store.runtime.banners.some((b) => b.sender === 'Random');
+      x.updateSettings({ dnd: false, vips: [] }); clearBanners();
+      return { ok: !!vip?.vip && !other, vipShown: !!vip, othersHeld: !other };
+    });
+
+    // Digest: held, then delivered together.
+    await check('digest', async () => {
+      x.updateSettings({ digest: { enabled: true, intervalMin: 60 } });
+      clearBanners();
+      await asIfFocused(async () => { await fromPage('Lamia', 'reel'); await fromPage('Zayan', 'lol'); await wait(800); });
+      const held = x.store.digest.length;
+      const noBanner = !x.store.runtime.banners.length;
+      await asIfFocused(async () => { x.notifier.deliverDigest(); await wait(500); });
+      const delivered = x.store.digest.length === 0 && x.store.runtime.banners.length > 0;
+      x.updateSettings({ digest: { enabled: false, intervalMin: 60 } }); clearBanners();
+      return { ok: held >= 2 && noBanner && delivered, held, deliveredTogether: delivered };
+    });
+
+    // Snooze: comes back as a reminder when due.
+    await check('snooze', async () => {
+      await fromPage('Nadia', 'remind me'); await wait(500);
+      const n = x.store.history.find((h) => h.sender === 'Nadia');
+      x.notifier.snooze(n.id, '15m');
+      const waiting = x.store.snoozed.some((s) => s.entry.id === n.id);
+      x.store.snoozed.find((s) => s.entry.id === n.id).until = Date.now() - 1;
+      clearBanners();
+      await asIfFocused(async () => { x.notifier.tick(); await wait(500); });
+      const back = x.store.runtime.banners.some((b) => b.id === n.id) && !x.store.snoozed.some((s) => s.entry.id === n.id);
+      clearBanners();
+      return { ok: waiting && back, waiting, cameBack: back };
+    });
+
+    // People view: one person's messages grouped across services.
+    await check('people-view', async () => {
+      x.selectInstance('w-test', 'i-wa'); await wait(300);
+      await fromPage('Rahim Ahmed', 'are we still on?'); await wait(600);
+      x.command('notifications'); await wait(700);
+      await js(`[...document.querySelectorAll('.nc button')].find((b) => b.textContent.trim() === 'People')?.click()`); await wait(500);
+      const text = await js(`document.querySelector('.nc')?.innerText ?? ''`);
+      await png(x.shellView.webContents, 'people-view');
+      await esc();
+      return { ok: text.includes('Rahim Ahmed') && text.includes('waiting on you'), shows: text.slice(0, 160) };
+    });
+
+    // Pins: save a page, then get back to it.
+    await check('pins', async () => {
+      await fixWc().loadURL('http://127.0.0.1:8765/site.html?pinned=1'); await wait(1000);
+      x.pinPage('w-test', 'i-fix');
+      const pin = x.store.settings.pins.at(-1);
+      await fixWc().loadURL('http://127.0.0.1:8765/'); await wait(1000);
+      x.openPin(pin.id); await wait(1200);
+      const ok = fixWc().getURL().includes('pinned=1');
+      x.updateSettings({ pins: x.store.settings.pins.filter((p) => p.id !== pin.id) });
+      return { ok, pinned: pin.url };
+    });
+
+    // Saved replies: typed into the field you're in.
+    await check('saved-replies', async () => {
+      await fixWc().executeJavaScript(`(() => { const t = document.createElement('textarea'); t.id = 'reply'; document.body.append(t); t.focus(); })()`);
+      x.insertReply('Thanks! Back soon.'); await wait(500);
+      const value = await fixWc().executeJavaScript(`document.getElementById('reply').value`);
+      return { ok: value === 'Thanks! Back soon.', value };
+    });
+
+    // Downloads: tracked with where they came from (saved to a temporary folder here).
+    await check('downloads', async () => {
+      app.setPath('downloads', OUT);
+      fixWc().downloadURL('http://127.0.0.1:8765/icon.png');
+      for (let k = 0; k < 20 && !x.store.downloads.some((d) => d.state === 'completed'); k++) await wait(250);
+      const d = x.store.downloads.find((d) => d.state === 'completed');
+      return { ok: !!d && d.instanceId === 'i-fix' && fs.existsSync(d.path ?? ''), file: d?.name, from: d?.instanceId };
+    });
+
+    // Menu bar / tray mini view opens and shows the accounts.
+    await check('tray-panel', async () => {
+      x.tray.toggle(); await wait(1500);
+      const panel = x.tray.webContents()[0];
+      const text = panel ? await panel.executeJavaScript(`document.body.innerText`) : '';
+      if (panel) await png(panel, 'tray-panel');
+      x.tray.hide();
+      return { ok: /Personal|Work|Test/i.test(text), shows: text.slice(0, 100) };
+    });
+
+    // Camera / microphone / screen in use: the dot, the call bubble, and the screen-share shield.
+    await check('media-indicators-and-call-bubble', async () => {
+      x.selectInstance('w-test', 'i-fix'); await wait(400);
+      await fixWc().executeJavaScript(`window.__extrovert.media(['mic', 'camera']); true`); await wait(400);
+      const dot = (x.store.statuses['i-fix'].media ?? []).includes('mic');
+      x.selectInstance('w-test', 'i-wa'); await wait(1200);
+      const bubble = !!x.store.runtime.call?.inBubble;
+      x.selectInstance('w-test', 'i-fix'); await wait(800); // back to the call: the bubble goes away
+      await fixWc().executeJavaScript(`window.__extrovert.media([]); true`); await wait(400);
+      const backInWindow = !x.store.runtime.call;
+      return { ok: dot && bubble && backInWindow, dot, bubble, endedCleanly: backInWindow };
+    });
+    await check('screen-share-shield', async () => {
+      x.updateSettings({ shareShield: true });
+      await fixWc().executeJavaScript(`window.__extrovert.media(['screen']); true`); await wait(400);
+      const sharing = !!x.store.runtime.sharing;
+      clearBanners();
+      await asIfFocused(async () => { x.selectInstance('w-test', 'i-wa'); await fromPage('Private', 'secret text'); await wait(700); });
+      const banner = x.store.runtime.banners.at(-1);
+      await fixWc().executeJavaScript(`window.__extrovert.media([]); true`); await wait(400);
+      clearBanners();
+      return { ok: sharing && banner?.body === 'Preview hidden' && !x.store.runtime.sharing, sharing, preview: banner?.body };
+    });
+
+    // Lock with a PIN: wrong PIN stays locked, right PIN unlocks.
+    await check('lock-with-pin', async () => {
+      x.setPin('2468');
+      await x.lock(); await wait(500);
+      const wrong = (await x.unlock({ pin: '1111' })).ok;
+      const right = (await x.unlock({ pin: '2468' })).ok;
+      x.setPin(null);
+      return { ok: !wrong && right && !x.store.runtime.locked, wrongRejected: !wrong, rightAccepted: right };
+    });
+
+    // Permissions dashboard: a block is remembered and enforced.
+    await check('permissions-dashboard', async () => {
+      x.updateInstance('i-fix', { permissions: { microphone: false } }); await wait(300);
+      const state = await fixWc().executeJavaScript(`navigator.permissions.query({ name: 'microphone' }).then((p) => p.state)`);
+      x.command('settings'); await wait(700);
+      await js(`[...document.querySelectorAll('.settings nav button')].find((b) => b.textContent.includes('Privacy'))?.click()`); await wait(500);
+      const listed = await js(`document.querySelector('.set-body').innerText.includes('Fixture') || document.querySelector('.set-body').innerText.includes('Microphone')`);
+      await png(x.shellView.webContents, 'permissions');
+      await esc();
+      x.updateInstance('i-fix', { permissions: {} });
+      return { ok: state === 'denied' && listed, pageSees: state, listedInSettings: listed };
+    });
+
+    // Per-workspace proxy: only that workspace's sessions use it.
+    await check('workspace-proxy', async () => {
+      x.updateWorkspace('w-work', { proxy: 'http://127.0.0.1:9' }); await wait(800);
+      const { session } = require('electron');
+      const work = await session.fromPartition('persist:w-work:i-li').resolveProxy('https://example.com');
+      const test = await session.fromPartition('persist:w-test:i-fix').resolveProxy('https://example.com');
+      x.updateWorkspace('w-work', { proxy: '' }); await wait(500);
+      return { ok: /127\.0\.0\.1:9/.test(work) && !/127\.0\.0\.1:9/.test(test), work, otherWorkspace: test };
+    });
+
+    // Time insights: counts while you use a service (here: something playing in it).
+    await check('time-insights', async () => {
+      x.selectInstance('w-test', 'i-fix'); await wait(300);
+      const seconds = () => Object.values(x.store.usage).reduce((n, day) => n + (day['i-fix'] ?? 0), 0);
+      const before = seconds();
+      await asIfFocused(async () => { x.usage.setPlaying('i-fix', true); await wait(3500); x.usage.setPlaying('i-fix', false); });
+      const counted = seconds() >= before + 2;
+      // If not, say why: it must not count while the screen is locked or the service isn't on screen.
+      return { ok: counted, counted, secondsAdded: seconds() - before, state: x.store.statuses['i-fix']?.state, screenLocked: x.usage.screenLocked, idleSeconds: require('electron').powerMonitor.getSystemIdleTime() };
+    });
+
+    // No autoplay: with it off, the page can't start sound on its own.
+    await check('no-autoplay', async () => {
+      x.updateInstance('i-fix', { autoplay: false }); await wait(2500);
+      const off = await fixWc().executeJavaScript(`new AudioContext().state`);
+      x.updateInstance('i-fix', { autoplay: true }); await wait(2500);
+      const on = await fixWc().executeJavaScript(`new AudioContext().state`);
+      return { ok: off === 'suspended' && on === 'running', autoplayOff: off, autoplayOn: on };
+    });
+
+    // Auto-recover: a service stuck offline is reloaded.
+    await check('auto-recover', async () => {
+      x.store.patchStatus('i-fix', { state: 'offline' });
+      x.recover('Back online'); await wait(2500);
+      const state = x.store.statuses['i-fix'].state;
+      return { ok: state === 'live' || state === 'loading', state };
+    });
+
+    // Smart sleep: under memory pressure the least-used feed sleeps; chats stay awake.
+    await check('smart-sleep', async () => {
+      x.selectWorkspace('w-work'); await wait(2500); x.selectWorkspace('w-test'); x.selectInstance('w-test', 'i-fix'); await wait(800);
+      const realPressure = x.memoryPressure;
+      x.memoryPressure = () => true; x.lastSmartSleep = 0;
+      x.hibernate();
+      x.memoryPressure = realPressure;
+      const feedAsleep = x.store.statuses['i-li']?.state === 'sleeping';
+      const chatAwake = x.views.has('i-wa');
+      x.wake(x.store.workspace('w-work'), x.store.locate('i-li').inst);
+      return { ok: feedAsleep && chatAwake, linkedinAsleep: feedAsleep, whatsappAwake: chatAwake };
+    });
+
+    // Ferdium import and export of the setup, through the app's own actions (file dialogs answered by the test).
+    await check('ferdium-and-config-io', async () => {
+      const { dialog } = require('electron');
+      const [open, save] = [dialog.showOpenDialog, dialog.showSaveDialog];
+      const ferdium = `${OUT}/ferdium.json`, config = `${OUT}/config.json`;
+      fs.writeFileSync(ferdium, JSON.stringify({ services: [{ recipeId: 'custom-website', name: 'Telegram', customUrl: 'https://web.telegram.org/k/' }, { recipeId: 'gmail', name: 'Gmail' }] }));
+      const before = new Set(x.store.workspace('w-test').instances.map((i) => i.id));
+      try {
+        dialog.showOpenDialog = async () => ({ canceled: false, filePaths: [ferdium] });
+        const result = await js(`window.extrovert.do('importFerdium', { workspaceId: 'w-test' })`);
+        dialog.showSaveDialog = async () => ({ canceled: false, filePath: config });
+        await js(`window.extrovert.do('exportConfig')`);
+        const exported = fs.existsSync(config) ? JSON.parse(fs.readFileSync(config, 'utf8')) : null;
+        const ok = result?.added === 2 && exported?.app === 'extrovert' && !exported.settings.appLock.pinHash && !JSON.stringify(exported).includes('cookie');
+        return { ok, addedFromFerdium: result?.added, exportedWorkspaces: exported?.workspaces?.length, noSecretsInExport: !exported?.settings?.appLock?.pinHash };
+      } finally {
+        dialog.showOpenDialog = open; dialog.showSaveDialog = save;
+        for (const i of [...x.store.workspace('w-test').instances]) if (!before.has(i.id)) x.removeInstance('w-test', i.id);
+        x.selectInstance('w-test', 'i-fix');
+      }
     });
 
     // Report a problem: fills in a GitHub issue, warns about needing a GitHub account, never leaks personal data.

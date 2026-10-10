@@ -14,16 +14,35 @@
   }
   // Downloads: straight to the installer for each system once a release exists (the files have
   // stable names); until then, and if GitHub can't be reached, the links stay on the Releases page.
-  const ASSET = { mac: 'Extrovert-mac.dmg', win: 'Extrovert-Setup.exe', linux: 'Extrovert-linux.AppImage' };
+  let releaseFiles = null; // file names in the latest release, once known
+  const applyLinks = () => releaseFiles && document.querySelectorAll('a[data-asset]').forEach((a) => {
+    if (releaseFiles.has(a.dataset.asset)) a.href = `https://github.com/Pantho-Haque/Extrovert/releases/latest/download/${a.dataset.asset}`;
+  });
+  const ASSET = { mac: 'Extrovert-mac-arm64.dmg', win: 'Extrovert-Setup.exe', linux: 'Extrovert-linux.AppImage' };
   if (os) document.querySelectorAll('.download').forEach((a) => { a.dataset.asset = ASSET[os]; });
+  // Macs come in two kinds with separate downloads. Browsers can't always tell which; guess (Apple
+  // silicon unless the browser or graphics chip says Intel) and offer the other right below.
+  if (os === 'mac') {
+    const showMac = (arch) => {
+      const other = arch === 'arm64' ? 'x64' : 'arm64';
+      document.querySelectorAll('.download').forEach((a) => { a.dataset.asset = `Extrovert-mac-${arch}.dmg`; a.querySelector('.os-label').textContent = `Download for ${arch === 'arm64' ? 'Apple silicon' : 'Intel'} Mac`; });
+      const alt = document.querySelector('.alt-dl');
+      alt.hidden = false;
+      alt.firstElementChild.dataset.asset = `Extrovert-mac-${other}.dmg`;
+      alt.firstElementChild.textContent = other === 'x64' ? 'Have an Intel Mac? Download this instead' : 'Have an Apple silicon (M-series) Mac? Download this instead';
+      applyLinks();
+    };
+    const gl = document.createElement('canvas').getContext('webgl');
+    const info = gl?.getExtension('WEBGL_debug_renderer_info');
+    showMac(/Intel/i.test(info ? gl.getParameter(info.UNMASKED_RENDERER_WEBGL) : '') ? 'x64' : 'arm64');
+    navigator.userAgentData?.getHighEntropyValues(['architecture']).then((v) => { if (v.architecture) showMac(v.architecture === 'arm' ? 'arm64' : 'x64'); }).catch(() => {});
+  }
   fetch('https://api.github.com/repos/Pantho-Haque/Extrovert/releases/latest', { headers: { Accept: 'application/vnd.github+json' } })
     .then((r) => (r.ok ? r.json() : null))
     .then((rel) => {
       if (!rel?.tag_name) return;
-      const names = new Set((rel.assets ?? []).map((x) => x.name));
-      document.querySelectorAll('a[data-asset]').forEach((a) => {
-        if (names.has(a.dataset.asset)) a.href = `https://github.com/Pantho-Haque/Extrovert/releases/latest/download/${a.dataset.asset}`;
-      });
+      releaseFiles = new Set((rel.assets ?? []).map((x) => x.name));
+      applyLinks();
       const when = new Date(rel.published_at).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' });
       document.querySelectorAll('.release-line').forEach((el) => {
         el.innerHTML = `<svg class="ic"><use href="#i-download"/></svg> Version ${rel.tag_name.replace(/^v/, '')} · ${when} · <a href="${rel.html_url}">What's new</a>`;
