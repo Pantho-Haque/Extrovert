@@ -1,10 +1,10 @@
 /**
  * Small always-on-top panels drawn over the service area without blocking it: toasts (bottom
- * center), the find bar (top right) and peek (next to the sidebar). Each is a transparent view
+ * center), the find bar and notification banners (top right) and peek (next to the sidebar). Each is a transparent view
  * sized to its content, so clicks elsewhere still reach the page underneath.
  */
 import { join } from 'node:path';
-import { WebContentsView } from 'electron';
+import { app as electronApp, WebContentsView } from 'electron';
 import type { FloatingName } from '../shared/ipc';
 import { loadRenderer, type Extrovert } from './app';
 import { SIDEBAR_WIDTH, TITLEBAR_HEIGHT } from './views';
@@ -15,19 +15,20 @@ export class Floating {
     toasts: { width: 0, height: 0 },
     find: { width: 380, height: 52 },
     peek: { width: 472, height: 320 },
+    banners: { width: 0, height: 0 },
   };
   private peekAt = { x: 0, y: 0 };
 
   constructor(private readonly app: Extrovert) {
     const make = (name: FloatingName) => {
-      const v = new WebContentsView({ webPreferences: { preload: join(__dirname, '../preload/shell.js'), sandbox: true, contextIsolation: true } });
+      const v = new WebContentsView({ webPreferences: { preload: join(__dirname, '../preload/shell.js'), sandbox: true, contextIsolation: true, devTools: !electronApp.isPackaged } });
       v.setBackgroundColor('#00000000');
       v.setVisible(false);
       app.win.contentView.addChildView(v);
       loadRenderer(v.webContents, name);
       return v;
     };
-    this.panels = { toasts: make('toasts'), find: make('find'), peek: make('peek') };
+    this.panels = { toasts: make('toasts'), find: make('find'), peek: make('peek'), banners: make('banners') };
     app.views.floating = Object.values(this.panels);
     app.win.on('resize', () => this.layout());
   }
@@ -68,6 +69,12 @@ export class Floating {
     const f = this.sizes.find;
     this.panels.find.setVisible(!!rt.find);
     if (rt.find) this.panels.find.setBounds({ x: width - f.width - 12, y: TITLEBAR_HEIGHT + 10, width: f.width, height: f.height });
+
+    // Notification banners: top right, below the find bar when it's open.
+    const b = this.sizes.banners;
+    const showBanners = rt.banners.length > 0 && b.height > 0;
+    this.panels.banners.setVisible(showBanners);
+    if (showBanners) this.panels.banners.setBounds({ x: width - b.width - 4, y: TITLEBAR_HEIGHT + (rt.find ? 62 : 4), width: b.width, height: b.height });
 
     const p = this.sizes.peek;
     this.panels.peek.setVisible(!!rt.peek);

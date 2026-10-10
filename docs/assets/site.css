@@ -629,3 +629,6 @@ button.art-row.on:hover { background: var(--accent-soft); }
 .release-line { display: inline-flex; gap: 5px; align-items: center; }
 .release-line[hidden] { display: none; }
 .inst-all { display: flex; flex-wrap: wrap; gap: 14px; justify-content: space-between; margin: 0; padding: 4px 28px 16px; color: var(--muted); font-size: 13px; }
+.alt-dl { margin: 10px 0 0; font-size: 13px; }
+.alt-dl[hidden] { display: none; }
+.dl-pair { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }

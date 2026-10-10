@@ -94,6 +94,8 @@ export class ViewHost {
     const view = new WebContentsView({
       webPreferences: {
         session: ses,
+        // Developer tools only when running from source; never in a released build.
+        devTools: !app.isPackaged,
         preload: join(__dirname, '../preload/service.js'),
         sandbox: true,
         contextIsolation: true,
@@ -124,11 +126,34 @@ export class ViewHost {
     wc.on('found-in-page', (_e, r) => this.events.found(r.matches, r.activeMatchOrdinal));
     // Sites like Gmail register "Leave site?" handlers; Electron would silently cancel quitting.
     wc.on('will-prevent-unload', (e) => e.preventDefault());
-    wc.setWindowOpenHandler(({ url }) => {
-      // Popups inside the service (logins, attachments) stay in-app; everything else is routed.
-      if (isServiceUrl({ domains: domainsOf(entry.type, entry.url) }, url)) return { action: 'allow', overrideBrowserWindowOptions: { webPreferences: { session: ses } } };
+    const inService = (url: string) => isServiceUrl({ domains: domainsOf(entry.type, entry.url) }, url);
+    const openHandler = ({ url }: Electron.HandlerDetails): Electron.WindowOpenHandlerResponse => {
+      // Popups inside the service (logins, attachments, calls) stay in-app with its login. Calls in
+      // Messenger and Meet open a blank window first and load the call into it, so blank is allowed.
+      if (inService(url) || url === '' || url === 'about:blank') {
+        return { action: 'allow', overrideBrowserWindowOptions: { width: 1000, height: 700, minWidth: 480, minHeight: 360, backgroundColor: '#000000', webPreferences: { session: ses, devTools: !app.isPackaged } } };
+      }
       this.events.openLink(id, url);
       return { action: 'deny' };
+    };
+    wc.setWindowOpenHandler(openHandler);
+    wc.on('did-create-window', (child) => {
+      const cwc = child.webContents;
+      const childId = cwc.id;
+      // Belongs to this service: its camera/mic prompts, permissions and call indicators.
+      this.byWebContents.set(childId, id);
+      cwc.once('destroyed', () => this.byWebContents.delete(childId));
+      cwc.setWindowOpenHandler(openHandler);
+      // A blank popup that turns out to be an outside link goes to the right place instead.
+      const leave = (e: Electron.Event, url: string) => {
+        if (!/^https?:/.test(url) || inService(url)) return;
+        e.preventDefault();
+        this.events.openLink(id, url);
+        const current = cwc.getURL();
+        if (!current || current === 'about:blank') child.close();
+      };
+      cwc.on('will-navigate', leave);
+      cwc.on('will-redirect', leave);
     });
 
     this.win.contentView.addChildView(view);

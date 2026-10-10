@@ -14,6 +14,7 @@ import { addedIn, keyOf } from '../core/guide/registry';
 import { isLoginPage, serviceDef } from '../core/services/catalog';
 import { nextUnread, totalUnread } from '../core/unread/aggregate';
 import { DEFAULT_UNREAD_PATTERN, parseUnread } from '../core/unread/parse-title';
+import { nextUnread as nextUnreadCount, titleSignal } from '../core/unread/title-signals';
 import { linkTargets } from '../core/routing/links';
 import { instanceName, instanceUrl, newInstance, newWorkspace, orderedInstances, orphanPartitionFolders, outsideWorkHours, partitionFor } from '../core/workspaces/model';
 import { loadSettings } from '../core/settings/defaults';
@@ -75,7 +76,7 @@ export class Extrovert {
     });
 
     // The shell (sidebar, pages, modals) fills the window and is transparent where services show through.
-    this.shellView = new WebContentsView({ webPreferences: { preload: join(__dirname, '../preload/shell.js'), sandbox: true, contextIsolation: true } });
+    this.shellView = new WebContentsView({ webPreferences: { preload: join(__dirname, '../preload/shell.js'), sandbox: true, contextIsolation: true, devTools: !app.isPackaged } });
     this.shellView.setBackgroundColor('#00000000');
     this.win.contentView.addChildView(this.shellView);
     loadRenderer(this.shellView.webContents, '');
@@ -264,12 +265,38 @@ export class Extrovert {
   }
 
   // ---------------------------------------------------------------- page events
+  private dropTimers = new Map<string, NodeJS.Timeout>();
+
   private onTitle(id: string, title: string): void {
     const loc = this.store.locate(id);
-    if (!loc) return;
+    const st = this.store.statuses[id];
+    if (!loc || !st) return;
     const pattern = loc.inst.type === 'custom' ? DEFAULT_UNREAD_PATTERN : serviceDef(loc.inst.type).unreadPattern;
-    const unread = parseUnread(title, pattern);
-    if (unread > 0) loc.inst.lastSignalAt = Date.now();
+    const parsed = parseUnread(title, pattern);
+    // A title without a count right after one with a count is usually a flash ("Rahim sent you a
+    // message"): keep the badge, and only drop it if the count is still gone a few seconds later.
+    const { unread, confirmLater } = nextUnreadCount(st.unread, parsed);
+    clearTimeout(this.dropTimers.get(id));
+    if (confirmLater) {
+      this.dropTimers.set(id, setTimeout(() => {
+        const now = this.views.webContents(id)?.getTitle() ?? '';
+        if (parseUnread(now, pattern) === 0) {
+          this.store.patchStatus(id, { unread: 0 });
+          this.notifier.markRead(id);
+        }
+      }, 6000));
+    }
+    if (parsed > 0) loc.inst.lastSignalAt = Date.now();
+
+    // Messages and calls the site announces only in its title, or only by a higher count.
+    const looking = this.win.isFocused() && this.activeInstance()?.id === id;
+    const signal = titleSignal(title);
+    if (signal && !looking) this.notifier.fromTitle(id, signal.sender ?? instanceName(loc.inst), signal.kind === 'call' ? 'Incoming call' : signal.text);
+    else if (st.title && unread > st.unread && !looking) {
+      const n = unread - st.unread;
+      const word = ({ chat: 'message', mail: 'email', feed: 'notification' } as Record<string, string>)[serviceDef(loc.inst.type).kind] ?? 'item';
+      this.notifier.fromCount(id, `${n} new ${word}${n === 1 ? '' : 's'}`);
+    }
     this.store.patchStatus(id, { title, unread });
   }
 

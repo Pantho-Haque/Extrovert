@@ -20,6 +20,12 @@ export interface ServiceDefinition {
    * signal (Facebook's logged-out page is just facebook.com). Any one of `names` counts.
    */
   sessionCookie?: { url: string; names: string[] };
+  /**
+   * Where a "new message" notification opens when the site gave no link: its messages page, which
+   * shows the newest conversation first (the one that just arrived). Same for "new notifications".
+   */
+  messagesUrl?: string;
+  notificationsUrl?: string;
 }
 
 const GOOGLE_DOMAINS = ['google.com', 'gstatic.com', 'googleusercontent.com', 'youtube.com'];
@@ -28,16 +34,16 @@ const META_SESSION = { url: 'https://www.facebook.com', names: ['c_user'] };
 const GOOGLE_LOGIN = [/^https:\/\/accounts\.google\.com\//, /^https:\/\/workspace\.google\.com\//, /\/intl\/[^/]+\/(gmail|calendar|drive|meet|chat)\/about/];
 
 export const catalog: ServiceDefinition[] = [
-  { id: 'facebook', name: 'Facebook', url: 'https://www.facebook.com/', domains: ['facebook.com', 'fbcdn.net', 'fb.com'], kind: 'feed', color: '#1877F2', group: 'social',
+  { id: 'facebook', name: 'Facebook', url: 'https://www.facebook.com/', messagesUrl: 'https://www.facebook.com/messages/t/', notificationsUrl: 'https://www.facebook.com/notifications/', domains: ['facebook.com', 'fbcdn.net', 'fb.com'], kind: 'feed', color: '#1877F2', group: 'social',
     loginPatterns: [/facebook\.com\/(login|checkpoint|recover)/], sessionCookie: META_SESSION },
-  { id: 'messenger', name: 'Messenger', url: 'https://www.facebook.com/messages/', domains: ['facebook.com', 'messenger.com', 'fbcdn.net'], kind: 'chat', color: '#A033FF', group: 'social',
+  { id: 'messenger', name: 'Messenger', url: 'https://www.facebook.com/messages/', messagesUrl: 'https://www.facebook.com/messages/t/', domains: ['facebook.com', 'messenger.com', 'fbcdn.net'], kind: 'chat', color: '#A033FF', group: 'social',
     loginPatterns: [/facebook\.com\/(login|checkpoint|recover)/], sessionCookie: META_SESSION },
   { id: 'whatsapp', name: 'WhatsApp', url: 'https://web.whatsapp.com/', domains: ['whatsapp.com', 'whatsapp.net'], kind: 'chat', color: '#25D366', group: 'social',
     loginPatterns: [] }, // QR login keeps the same URL; signed-out detection for WhatsApp comes from its title
   // Instagram offers "Log in with Facebook", so facebook.com must stay in-app.
-  { id: 'instagram', name: 'Instagram', url: 'https://www.instagram.com/', domains: ['instagram.com', 'cdninstagram.com', 'facebook.com'], kind: 'feed', color: '#DD2A7B', group: 'social',
+  { id: 'instagram', name: 'Instagram', url: 'https://www.instagram.com/', messagesUrl: 'https://www.instagram.com/direct/inbox/', notificationsUrl: 'https://www.instagram.com/direct/inbox/', domains: ['instagram.com', 'cdninstagram.com', 'facebook.com'], kind: 'feed', color: '#DD2A7B', group: 'social',
     loginPatterns: [/instagram\.com\/accounts\/(login|emailsignup)/], sessionCookie: { url: 'https://www.instagram.com', names: ['sessionid'] } },
-  { id: 'linkedin', name: 'LinkedIn', url: 'https://www.linkedin.com/feed/', domains: ['linkedin.com', 'licdn.com'], kind: 'feed', color: '#0A66C2', group: 'social',
+  { id: 'linkedin', name: 'LinkedIn', url: 'https://www.linkedin.com/feed/', messagesUrl: 'https://www.linkedin.com/messaging/', notificationsUrl: 'https://www.linkedin.com/notifications/', domains: ['linkedin.com', 'licdn.com'], kind: 'feed', color: '#0A66C2', group: 'social',
     loginPatterns: [/linkedin\.com\/(login|uas\/login|checkpoint|authwall|signup)/, /^https:\/\/www\.linkedin\.com\/?(\?|$)/], sessionCookie: { url: 'https://www.linkedin.com', names: ['li_at'] } },
   // Gmail puts the count mid-title: "Inbox (3) - you@gmail.com - Gmail".
   { id: 'gmail', name: 'Gmail', url: 'https://mail.google.com/mail/', domains: GOOGLE_DOMAINS, kind: 'mail', color: '#EA4335', group: 'google',

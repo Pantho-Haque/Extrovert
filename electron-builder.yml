@@ -15,18 +15,23 @@ files:
 # The app reads its icons from resources/ with native APIs, which can't look inside app.asar.
 asarUnpack:
   - resources/**
+# Chromium's own UI text (context menus, date pickers) in these languages only; the rest fall back to
+# English. Websites are unaffected. Saves about 45 MB per install.
+# Windows and Linux spell regional variants with "-" (zh-CN), macOS with "_" (zh_CN), so both are listed.
+electronLanguages: [en, en-GB, en_GB, bn, hi, ur, ar, zh-CN, zh_CN, zh-TW, zh_TW, ja, ko, es, es-419, es_419, fr, de, it, pt-BR, pt_BR, pt-PT, pt_PT, ru, tr, id, ms, vi, th, nl, pl]
 
 # Stable file names (no version), so the website and README can link to
 # https://github.com/Pantho-Haque/Extrovert/releases/latest/download/<name>
 mac:
   icon: resources/icon.png
   category: public.app-category.social-networking
+  # One app per kind of Mac, half the size of a universal one. The zips feed the update check.
   target:
     - target: dmg
-      arch: universal
+      arch: [arm64, x64]
     - target: zip
-      arch: universal
-  artifactName: Extrovert-mac.${ext}
+      arch: [arm64, x64]
+  artifactName: Extrovert-mac-${arch}.${ext}
   # Not signed with a paid Apple certificate yet: ad-hoc signed, so macOS asks once on first open.
   identity: "-"
   hardenedRuntime: false
@@ -35,6 +40,7 @@ mac:
     NSMicrophoneUsageDescription: Services you add (WhatsApp, Meet, Messenger…) can use your microphone for calls.
 dmg:
   title: Extrovert
+  format: ULFO # LZFSE: smaller than the default zlib, and quick to open
 
 win:
   icon: resources/icon.png

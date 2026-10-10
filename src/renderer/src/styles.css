@@ -614,3 +614,19 @@ td.svc-cell > .look-btn { display: inline-block; }
 
 .ob-warn { max-width: 520px; text-align: left; }
 .ob-warn p { margin: 0; }
+
+/* In-app notification banners (top right) */
+.banners { display: grid; gap: 8px; width: 360px; }
+.banner { position: relative; overflow: hidden; border: 1px solid var(--line); border-radius: 16px; background: color-mix(in srgb, var(--card) 92%, transparent); box-shadow: 0 14px 36px rgba(15, 23, 42, .28); backdrop-filter: blur(18px); animation: bannerin .32s cubic-bezier(.2, .9, .3, 1.15); }
+.banner.vip { border-color: color-mix(in srgb, #EAB308 60%, var(--line)); }
+@keyframes bannerin { from { opacity: 0; transform: translateX(24px) scale(.97); } }
+.banner-open { display: flex; gap: 12px; align-items: center; width: 100%; padding: 12px 34px 12px 12px; border: 0; background: none; text-align: left; }
+.banner-open:hover { background: var(--hover); }
+.banner-av { position: relative; flex-shrink: 0; }
+.banner-svc { position: absolute; right: -5px; bottom: -5px; display: grid; padding: 2px; border-radius: 7px; background: var(--card); }
+.banner-txt { display: grid; min-width: 0; gap: 1px; font-size: 13px; }
+.banner-txt small { color: var(--muted); font-size: 11px; }
+.banner-txt b { font-size: 14px; }
+.banner-txt span { overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; color: var(--text); opacity: .85; }
+.banner-x { position: absolute; top: 8px; right: 8px; display: grid; place-items: center; width: 22px; height: 22px; padding: 0; border: 0; border-radius: 50%; background: var(--hover); color: var(--muted); opacity: 0; transition: opacity .15s; }
+.banner:hover .banner-x { opacity: 1; }

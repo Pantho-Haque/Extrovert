@@ -38,7 +38,7 @@ const SERVICE_TYPES = new Set<string>(catalog.map((s) => s.id));
 const INSTANCE_FIELDS = ['label', 'tag', 'url', 'enabled', 'muted', 'alerts', 'sound', 'badge', 'autoplay'] as const;
 const WORKSPACE_FIELDS = ['name', 'color', 'suspended', 'proxy', 'workHours'] as const;
 const SNOOZES = new Set(['15m', '1h', 'tonight', 'tomorrow']);
-const FLOATING = new Set(['toasts', 'find', 'peek']);
+const FLOATING = new Set(['toasts', 'find', 'peek', 'banners']);
 
 type Handler = (app: Extrovert, p: Record<string, unknown>) => unknown;
 
@@ -161,6 +161,12 @@ const handlers: { [K in ActionName]: Handler } = {
   checkUpdates: (a) => a.updates.check(),
   installUpdate: (a) => a.updates.install(),
   systemInfo: (a) => a.systemInfo(),
+  dismissBanner: (a, p) => a.notifier.dismissBanner(str(p.id)),
+  openPrivacySettings: (_a, p) => {
+    const pane = { camera: 'Privacy_Camera', microphone: 'Privacy_Microphone' }[str(p.device)];
+    if (!pane || process.platform !== 'darwin') throw new BadPayload('Unknown settings pane');
+    return shell.openExternal(`x-apple.systempreferences:com.apple.preference.security?${pane}`);
+  },
   siteIcon: async (_a, p) => {
     const parsed = parseCustomUrl(str(p.url));
     return parsed ? ((await siteIconFor(parsed.url)) ?? null) : null;

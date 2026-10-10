@@ -5,7 +5,7 @@ import { instanceName, orderedInstances } from '../../core/workspaces/model';
 import type { AppSnapshot, ActionName, FloatingName } from '../../shared/ipc';
 import { Icon } from './icons';
 import { act, findInstance } from './lib';
-import { Avatar, Brand, ServiceIcon, Switch } from './ui';
+import { Avatar, Brand, PersonAvatar, ServiceIcon, Switch } from './ui';
 
 /**
  * Reports the panel's content size to main, which sizes the transparent view to fit. A callback ref,
@@ -38,6 +38,36 @@ export function ToastsPanel({ snap }: { snap: AppSnapshot }) {
             <button className="x" aria-label="Dismiss" onClick={() => act('dismissToast', { id: t.id })}><Icon name="x" size={14} /></button>
           </div>
         ))}
+      </div>
+    </div>
+  );
+}
+
+/** Notifications while you're using Extrovert (macOS shows no system banners for the front app). */
+export function BannersPanel({ snap }: { snap: AppSnapshot }) {
+  const ref = useReportSize('banners');
+  return (
+    <div ref={ref} className="panel-root">
+      <div className="banners">
+        {snap.runtime.banners.map((b) => {
+          const loc = findInstance(snap, b.instanceId);
+          return (
+            <div key={b.id} className={`banner ${b.vip ? 'vip' : ''}`} role="alert">
+              <button className="banner-open" onClick={() => act('openNotification', { id: b.id })}>
+                <span className="banner-av">
+                  {b.id.startsWith('digest:') ? <Brand size={38} /> : <PersonAvatar name={b.sender} size={38} />}
+                  {loc && <span className="banner-svc"><ServiceIcon type={loc.inst.type} look={loc.inst} status={snap.statuses[loc.inst.id]} size={18} /></span>}
+                </span>
+                <span className="banner-txt">
+                  <small>{b.where}</small>
+                  <b>{b.vip ? '★ ' : ''}{b.sender}</b>
+                  <span>{b.body}</span>
+                </span>
+              </button>
+              <button className="banner-x" aria-label="Dismiss" onClick={() => act('dismissBanner', { id: b.id })}><Icon name="x" size={13} /></button>
+            </div>
+          );
+        })}
       </div>
     </div>
   );

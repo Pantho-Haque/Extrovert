@@ -124,6 +124,12 @@ export interface NotificationEntry {
   at: number;
   /** The page's own notification id, used to reopen the exact chat (FR-X03). */
   pageId?: string;
+  /** The page handles clicks itself (a plain `new Notification`); otherwise Extrovert opens `url`. */
+  pageHandlesClick?: boolean;
+  /** The conversation's address, when the site gave one with the notification. */
+  url?: string;
+  /** Announced only by the title or the unread count, so it carries no address. */
+  source?: 'title' | 'count';
 }
 
 export type InstanceState = 'loading' | 'live' | 'signedout' | 'syncing' | 'sleeping' | 'offline' | 'crashed';

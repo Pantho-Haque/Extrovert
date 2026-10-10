@@ -39,7 +39,7 @@ const parseProfile = (raw: unknown): Profile => {
 const emptyRuntime = (): Runtime => ({
   zen: false, locked: false, overlay: false, online: true, signingIn: false, touchId: false,
   sharing: null, call: null, outsideHours: {}, recap: null, feedGuard: null, permissionPrompt: null,
-  screenPicker: null, update: null, find: null, toasts: [], peek: null, lockImage: null, whatsNew: null,
+  screenPicker: null, update: null, find: null, toasts: [], banners: [], peek: null, lockImage: null, whatsNew: null,
 });
 
 export const blankStatus = (url: string): InstanceStatus => ({ state: 'loading', unread: 0, dot: false, title: '', url, media: [] });

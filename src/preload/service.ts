@@ -8,12 +8,19 @@ export interface PageNotification {
   id: string;
   title: string;
   body: string;
+  /** The page has its own click handler (a plain `new Notification`). */
+  handlesClick?: boolean;
+  /** The conversation's address, from the notification's data (service-worker style notifications). */
+  url?: string;
 }
 
 const clip = (v: unknown, max: number) => String(v ?? '').slice(0, max);
 
 contextBridge.exposeInMainWorld('__extrovert', {
-  notify: (n: PageNotification) => ipcRenderer.send('svc:notify', { id: clip(n?.id, 64), title: clip(n?.title, 200), body: clip(n?.body, 1000) }),
+  notify: (n: PageNotification) => ipcRenderer.send('svc:notify', {
+    id: clip(n?.id, 64), title: clip(n?.title, 200), body: clip(n?.body, 1000), handlesClick: n?.handlesClick === true,
+    ...(typeof n?.url === 'string' && /^https?:\/\//.test(n.url) ? { url: clip(n.url, 2000) } : {}),
+  }),
   media: (kinds: unknown) => ipcRenderer.send('svc:media', Array.isArray(kinds) ? kinds.filter((k) => ['mic', 'camera', 'screen'].includes(k)) : []),
   onClick: (cb: (id: string) => void) => ipcRenderer.on('svc:click', (_e, id: string) => cb(id)),
   onStopScreen: (cb: () => void) => ipcRenderer.on('svc:stop-screen', () => cb()),
@@ -23,12 +30,36 @@ contextBridge.exposeInMainWorld('__extrovert', {
 contextBridge.executeInMainWorld({
   func: () => {
     type Bridge = {
-      notify(n: { id: string; title: string; body: string }): void;
+      notify(n: { id: string; title: string; body: string; handlesClick?: boolean; url?: string }): void;
       media(kinds: string[]): void;
       onClick(cb: (id: string) => void): void;
       onStopScreen(cb: () => void): void;
     };
     const bridge = (window as unknown as { __extrovert: Bridge }).__extrovert;
+
+    /** The first address-looking value in a notification's data (sites use different keys). */
+    const linkIn = (data: unknown, depth = 0): string | undefined => {
+      if (typeof data === 'string') {
+        if (!/^(https?:\/\/|\/[^/])/.test(data)) return undefined; // a link or a path, not any word
+        try {
+          const u = new URL(data, location.href);
+          return /^https?:$/.test(u.protocol) ? u.href : undefined;
+        } catch {
+          return undefined;
+        }
+      }
+      if (!data || typeof data !== 'object' || depth > 2) return undefined;
+      const o = data as Record<string, unknown>;
+      for (const k of ['url', 'href', 'link', 'uri', 'click_action', 'clickAction', 'target_url', 'targetUrl', 'deeplink', 'path']) {
+        const found = typeof o[k] === 'string' ? linkIn(o[k], depth + 1) : undefined;
+        if (found) return found;
+      }
+      for (const v of Object.values(o)) {
+        const found = v && typeof v === 'object' ? linkIn(v, depth + 1) : undefined;
+        if (found) return found;
+      }
+      return undefined;
+    };
 
     // --- Notifications: Extrovert shows them natively, and routes clicks back to the page so it opens the right chat.
     const live = new Map<string, EventTarget & { onclick: ((e: Event) => void) | null }>();
@@ -40,7 +71,7 @@ contextBridge.executeInMainWorld({
       onclose: ((e: Event) => void) | null = null;
       onerror: ((e: Event) => void) | null = null;
       readonly id = `n${Date.now().toString(36)}${(seq++).toString(36)}`;
-      constructor(title: string, options: NotificationOptions = {}) {
+      constructor(title: string, options: NotificationOptions = {}, fromServiceWorker = false) {
         super();
         this.title = String(title);
         this.body = options.body ?? '';
@@ -49,7 +80,11 @@ contextBridge.executeInMainWorld({
         this.icon = options.icon ?? '';
         live.set(this.id, this);
         if (live.size > 200) live.delete(live.keys().next().value!);
-        bridge.notify({ id: this.id, title: this.title, body: this.body });
+        // A plain `new Notification` gets its click back (the page opens the chat itself). One shown
+        // through the service worker expects the worker to handle the click, which never happens in
+        // Extrovert, so the chat address it carries is used instead.
+        const url = fromServiceWorker ? linkIn(options.data) : undefined;
+        bridge.notify({ id: this.id, title: this.title, body: this.body, handlesClick: !fromServiceWorker, ...(url ? { url } : {}) });
         queueMicrotask(() => {
           const e = new Event('show');
           this.onshow?.(e);
@@ -76,7 +111,7 @@ contextBridge.executeInMainWorld({
     Object.defineProperty(window, 'Notification', { value: ExtrovertNotification, writable: true, configurable: true });
     if (typeof ServiceWorkerRegistration !== 'undefined') {
       ServiceWorkerRegistration.prototype.showNotification = function (title: string, options?: NotificationOptions) {
-        new ExtrovertNotification(title, options);
+        new ExtrovertNotification(title, options, true);
         return Promise.resolve();
       };
     }

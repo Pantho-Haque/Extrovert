@@ -34,12 +34,13 @@ No account with us, no server, no tracking. Everything stays on your computer.
 
 | System | Download | Install |
 |---|---|---|
-| **macOS** 12+ (Apple silicon & Intel) | [**Extrovert-mac.dmg**](https://github.com/Pantho-Haque/Extrovert/releases/latest/download/Extrovert-mac.dmg) | Open it and drag Extrovert to Applications. |
+| **macOS** 12+, Apple silicon (M1 and later) | [**Extrovert-mac-arm64.dmg**](https://github.com/Pantho-Haque/Extrovert/releases/latest/download/Extrovert-mac-arm64.dmg) | Open it and drag Extrovert to Applications. |
+| **macOS** 12+, Intel | [**Extrovert-mac-x64.dmg**](https://github.com/Pantho-Haque/Extrovert/releases/latest/download/Extrovert-mac-x64.dmg) | Open it and drag Extrovert to Applications. |
 | **Windows** 10 and 11 (64-bit) | [**Extrovert-Setup.exe**](https://github.com/Pantho-Haque/Extrovert/releases/latest/download/Extrovert-Setup.exe) | Run it. |
 | **Linux** (x64) | [**Extrovert-linux.AppImage**](https://github.com/Pantho-Haque/Extrovert/releases/latest/download/Extrovert-linux.AppImage) | `chmod +x Extrovert-linux.AppImage`, then run it. |
 | **Debian / Ubuntu** (x64) | [**Extrovert-linux.deb**](https://github.com/Pantho-Haque/Extrovert/releases/latest/download/Extrovert-linux.deb) | `sudo apt install ./Extrovert-linux.deb` |
 
-Every release, with notes: [GitHub Releases](https://github.com/Pantho-Haque/Extrovert/releases).
+Not sure which Mac you have? Apple menu → **About This Mac**: "Apple M…" means Apple silicon. Every release, with notes: [GitHub Releases](https://github.com/Pantho-Haque/Extrovert/releases).
 
 ### "Unidentified developer" warnings
 
@@ -105,7 +106,7 @@ The real websites, plus any site you add.
 Live badges and real notifications, minus the noise.
 
 - **Live unread badges**: On every service, every account, and the dock or tray.
-- **Notifications with previews**: Each service's own notifications, shown natively, with a full history. `⌘⇧N / Ctrl+Shift+N`
+- **Notifications with previews**: Each service's own notifications, as a banner inside Extrovert while you use it and from your system otherwise, once per message, with a full history. `⌘⇧N / Ctrl+Shift+N`
 - **Next unread**: Jump to the next service with something new, across all accounts, until you reach inbox zero. `⌘J / Ctrl+J`
 - **People view**: See who is waiting on you, grouped by person across platforms.
 - **VIPs**: Messages from your VIPs break through Do Not Disturb and digests.
@@ -193,7 +194,6 @@ Free, open source, yours to keep.
 | Zen mode (hide the sidebar) | `⌘\` | `Ctrl+\` |
 | Shortcuts & features | `⌘/` | `Ctrl+/` |
 | Settings | `⌘,` | `Ctrl+,` |
-| Developer tools for the service | `⌥⌘I` | `Alt+Ctrl+I` |
 <!-- /guide:shortcuts -->
 
 `⌘1`–`9` / `Ctrl+1`–`9` switches to the services in sidebar order; `⌘⇧1`–`9` / `Ctrl+Shift+1`–`9` switches to your accounts in order.
